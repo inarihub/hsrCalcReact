@@ -1,5 +1,6 @@
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import ReactRefreshTypescipt from 'react-refresh-typescript';
+import ImageMinimizerPlugin from 'image-minimizer-webpack-plugin';
 import type { ModuleOptions } from 'webpack';
 import { BuildOptions } from './types/types';
 import ReactRefreshPlugin from '@pmmmwh/react-refresh-webpack-plugin';
@@ -7,10 +8,34 @@ import ReactRefreshPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 export function buildLoaders(options: BuildOptions): ModuleOptions['rules'] {
 
     const isDev = options.mode === 'development';
+    const isProd = options.mode === 'production';
 
-    const assetLoader = {
+    const fontLoader = {
+        test: /\.(woff2?|ttf)$/i,
+        type: 'asset/resource',
+        generator: {
+            filename: 'fonts/[hash][name][ext]'
+        }
+    }
+
+    const assetImgLoader = {
         test: /\.(png|jp(e)?g|svg|gif)$/i,
-        type: 'asset/resource'
+        type: 'asset/resource',
+        use: isProd ? [
+            {
+                loader: ImageMinimizerPlugin.loader,
+                options: {
+                    minimizer: {
+                        implementation: ImageMinimizerPlugin.sharpMinify,
+                        options: {
+                            encodeOptions: {
+                            
+                            },
+                        },
+                    },
+                },
+            },
+        ] : undefined,
     }
 
     const cssLoaderWithModules = {
@@ -56,7 +81,7 @@ export function buildLoaders(options: BuildOptions): ModuleOptions['rules'] {
     }
 
     return [
-        assetLoader,
+        assetImgLoader,
         scssLoader,
         tsLoader
     ]

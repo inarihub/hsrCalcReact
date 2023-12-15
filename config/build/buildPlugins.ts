@@ -35,7 +35,7 @@ export function buildPlugins({mode, paths, analyzer}: BuildOptions): Configurati
         plugins.push(
             new MiniCssExtractPlugin({
                 filename: 'css/[name].[contenthash:8].css',
-                chunkFilename: 'css/[name].[contenthash:8].css'
+                chunkFilename: 'css/[name].[contenthash:16].css'
             }),
             // new CopyWebpackPlugin(
             //     {
