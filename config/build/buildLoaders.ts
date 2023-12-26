@@ -4,6 +4,7 @@ import ImageMinimizerPlugin from 'image-minimizer-webpack-plugin';
 import type { ModuleOptions } from 'webpack';
 import { BuildOptions } from './types/types';
 import ReactRefreshPlugin from '@pmmmwh/react-refresh-webpack-plugin';
+import path from 'path';
 
 export function buildLoaders(options: BuildOptions): ModuleOptions['rules'] {
 
@@ -53,7 +54,14 @@ export function buildLoaders(options: BuildOptions): ModuleOptions['rules'] {
         use: [
             isDev ? 'style-loader' : MiniCssExtractPlugin.loader,
             cssLoaderWithModules,
-            'sass-loader'
+            {
+                loader: 'sass-loader',
+                options: {
+                    sassOptions: {
+                        includePaths: ['./src/styles'],
+                    }
+                }
+            }
         ]
     };
 

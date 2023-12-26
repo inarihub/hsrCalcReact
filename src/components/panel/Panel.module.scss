@@ -1,0 +1,39 @@
+@use 'index' as *;
+
+$fadingLinGradient: linear-gradient(90deg, black 0%, $darkBlueBg 35%, black 100%);
+
+.mainPanel {
+    @include flex-container(center, flex-start);
+    height: 30px;
+    padding: 0 5px;
+    background: $fadingLinGradient;
+    
+
+    .logoContainer {
+        @include flex-container(center, flex-start);
+        //border: 1px solid white;
+        height: 100%;
+
+        .logo {
+            height: 80%;
+        }
+    }
+
+    .navigationContainer {
+        @include flex-container(center, flex-start);
+        padding: 0 0 0 10px;
+        //border: 1px solid white;
+        height: 100%;
+
+        .navButton {
+            height: 75%;
+            margin: 0 3px 0 0;
+            border: 1px solid white;
+            background-color: rgba(143, 164, 213, 0.552);
+            color: white;
+            font-size: 12px;
+            font-family: $font-main;
+        }
+    }
+}
+

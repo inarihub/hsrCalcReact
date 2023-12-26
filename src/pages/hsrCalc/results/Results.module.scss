@@ -1,0 +1,26 @@
+@use 'index' as *;
+
+.resultsMain {
+    @include flex-container;
+
+    flex-direction: column;
+    background-color: rgba(42, 40, 76, 0.607) ;
+    border: 1px dotted white;
+    width: 100%;
+
+    .resultRow {
+        @include flex-container(center, space-between);
+
+        border: 1px dotted white;
+        width: 100%;
+
+        .attText {
+            padding: 0.4em;
+        }
+
+        .valueText {
+            padding: 0.4em;
+            font-weight: bold;
+        }
+    }
+}

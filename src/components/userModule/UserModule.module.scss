@@ -1,0 +1,11 @@
+@use 'index' as *;
+
+.userModuleContainer {
+    @include flex-container(flex-start);
+    height: 400px;
+    width: 200px;
+    border: 1px solid white;
+    flex-direction: row;
+    margin: 10px;
+    background-color: #5b6d9281;
+}

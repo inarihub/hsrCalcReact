@@ -2,7 +2,6 @@ import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
-import CopyWebpackPlugin from 'copy-webpack-plugin';
 import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer'
 import { BuildOptions } from "./types/types";
 import type { Configuration } from "webpack";
@@ -37,13 +36,6 @@ export function buildPlugins({mode, paths, analyzer}: BuildOptions): Configurati
                 filename: 'css/[name].[contenthash:8].css',
                 chunkFilename: 'css/[name].[contenthash:16].css'
             }),
-            // new CopyWebpackPlugin(
-            //     {
-            //         patterns: [
-            //             {from: path.resolve(paths.public, 'smh'), to: path.resolve(paths.output, 'smh')}
-            //         ]
-            //     }
-            // )
         );
     }
 

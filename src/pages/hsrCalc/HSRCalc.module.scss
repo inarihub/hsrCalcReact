@@ -1,0 +1,12 @@
+@use 'index' as *;
+
+.calcMainContainer {
+    @include flex-container(center,space-between);
+    flex-direction: column;
+    width: 300px;
+    height: 400px;
+    background-color: rgba(69, 94, 129, 0.704);
+    color: white;
+    margin: 10px;
+    border: 1px solid white;
+}

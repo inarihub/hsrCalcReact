@@ -1,0 +1,11 @@
+@import 'fonts';
+@import 'vars';
+@import 'mixins';
+
+body {
+    margin: 0;
+    padding: 0;
+    color: white;
+    font-family: $font-main;
+    font-weight: normal;
+}
