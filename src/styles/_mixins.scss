@@ -4,3 +4,26 @@
     align-items: $alignItems;
     wrap: $wrap;
 }
+
+@mixin statsContainer($bgcolor: $moduleBG, $color: white, $align: center, $justifyCnt: space-between) {
+    @include flex-container($align, $justifyCnt);
+    flex-direction: column;
+    background-color: $bgcolor;
+    color: $color;
+    min-width: max-content;
+    border: 1px solid $lightBlue;
+    border-radius: 3px;
+}
+
+@mixin optionBox($bgcolor: $backgroundInput, $color: white) {
+    background-color: $bgcolor;
+    color: $color;
+}
+
+@mixin selectBox($bgcolor: $backgroundInput, $color: white) {
+    background-color: $bgcolor;
+    color: $color;
+    font-family: $font-main;
+    padding: 0;
+    border: 1px solid black;
+}

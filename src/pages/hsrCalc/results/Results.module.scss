@@ -5,13 +5,12 @@
 
     flex-direction: column;
     background-color: rgba(42, 40, 76, 0.607) ;
-    border: 1px dotted white;
+    border: 1px solid $lightBlue;
+    border-radius: 3px;
     width: 100%;
 
     .resultRow {
         @include flex-container(center, space-between);
-
-        border: 1px dotted white;
         width: 100%;
 
         .attText {

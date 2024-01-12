@@ -1,0 +1,43 @@
+@use 'index' as *;
+
+.dataStoreModule {
+    @include statsContainer($align: center, $justifyCnt: flex-start);
+    width: 20em;
+    height: fit-content;
+    gap: 0.5em;
+
+    .header {
+        padding: 5px 0;
+        margin: 0;
+        font-size: 20px;
+    }
+
+    .headerSection {
+        @include flex-container(center, space-between);
+        flex-direction: row;
+        width: 95%;
+
+        .statusText {
+            text-align: right;
+            width: 5em;
+        }
+    }
+
+    .saveSection {
+        @include flex-container(center, space-between);
+        flex-direction: row;
+        width: 95%;
+
+        .inputSave {
+            width: 9.5em;
+        }
+    }
+
+
+    .loadSection {
+        @include flex-container(center, space-between);
+        width: 95%;
+        margin: 0 0 10px 0;
+        flex-direction: row;
+    }
+}

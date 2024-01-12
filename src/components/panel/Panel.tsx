@@ -11,7 +11,7 @@ export const Panel = () => {
             </div>
             <div className={classes.navigationContainer}>
                 <button className={classes.navButton} onClick={() => navigate('/hsrCalc')}>HSRCalc</button>
-                <button className={classes.navButton} onClick={() => navigate('/about')}>About</button>
+                <button className={classes.navButton} onClick={() => navigate('/help')}>Help</button>
             </div>
         </div>
     );

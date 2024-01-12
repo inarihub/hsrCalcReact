@@ -1,0 +1,35 @@
+@use 'index' as *;
+
+.mainContainer {
+    @include flex-container(center, flex-start);
+    flex-direction: column;
+    width: 320px;
+    height: 30.7em;
+
+    .header {
+        align-self: flex-start;
+        padding: 10px 0 10px 7px;
+        width: 40%;
+        margin: 0;
+        font-size: 24px;
+    }
+
+    .atkSection {
+        @include flex-container;
+        flex-direction: column;
+        width: 95%;
+        border: 1px solid white;
+        border-radius: 5px;
+    }
+
+    .dmgSrcSection {
+        @include flex-container(center, space-between);
+        width: 95%;
+        margin: 0.3em;
+        gap: 1em;
+
+        select {
+            width: 7em;
+        }
+    }
+}

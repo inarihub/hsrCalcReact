@@ -1,16 +1,54 @@
 @use 'index.scss' as *;
 
+@keyframes BG-MOVE {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-511px);
+    }
+    
+}
+
+.bg {
+    background-image: url('@/assets/img/seamless_space.png');
+    background-size: inherit;
+    background-repeat: repeat;
+    width: 200vw;
+    min-height: 100vh;
+    animation: BG-MOVE 50s linear infinite;
+}
+
+.bgContainer {
+    overflow-x: hidden;
+    overflow-y: hidden;
+    position: fixed;
+    margin: 0;
+    padding: 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: -1;
+}
+
 .main {
     margin: 0;
     padding: 0;
-    background-color: black;
-    background-image: url('@/assets/img/seamless_space.png');
-    background-size: auto;
+    // background-color: black;
+    // background-image: url('@/assets/img/seamless_space.png');
+    // background-size: inherit;
+    // background-repeat: repeat;
+    width: 100vw;
     min-height: 100vh;
 
     .modulesContainer {
-        border: 1px solid white; //debug
+        padding: 1em;
         display: flex;
+        box-sizing: border-box;
+        width: 100%;
+        gap: 1em;
+        flex-direction: column;
         flex-wrap: wrap;
     }
     

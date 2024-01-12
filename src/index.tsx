@@ -1,8 +1,8 @@
 import { createRoot } from 'react-dom/client';
 import { App } from './components/App';
-import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { Navigate, RouterProvider, createBrowserRouter, redirect } from 'react-router-dom';
 import { HSRCalc } from './pages/hsrCalc';
-import { About } from './pages/about';
+import { Help } from './pages/help';
 import { Suspense } from 'react';
 
 const root = document.getElementById('root');
@@ -23,8 +23,8 @@ const router = createBrowserRouter([
         element: <Navigate to='/hsrCalc' />
       },
       {
-        path: '/about',
-        element: <Suspense fallback={'Loading...'}><About /></Suspense>
+        path: '/help',
+        element: <Suspense fallback={'Loading...'}><Help /></Suspense>
       },
       {
         path: '/hsrCalc',
@@ -36,6 +36,7 @@ const router = createBrowserRouter([
       }
     ]
   },
-]);
+], {basename: '/hsrExpressCalc'}
+);
 
 container.render(<RouterProvider router={router} />);

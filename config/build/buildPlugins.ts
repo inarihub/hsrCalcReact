@@ -16,7 +16,13 @@ export function buildPlugins({mode, paths, analyzer}: BuildOptions): Configurati
     const plugins: Configuration['plugins'] = [
         new HtmlWebpackPlugin({
             template: paths.html,
-            favicon: path.resolve(paths.public, 'favicon.ico')
+            favicon: path.resolve(paths.public, 'favicon.ico'),
+            chunks: ['main']
+        }), new HtmlWebpackPlugin({
+            filename: '404.html',
+            template: paths.html404,
+            favicon: path.resolve(paths.public, 'favicon.ico'),
+            chunks: ['respondPages']
         }),
         new ForkTsCheckerWebpackPlugin()
 

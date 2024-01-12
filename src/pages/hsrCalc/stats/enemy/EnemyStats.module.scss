@@ -1,0 +1,25 @@
+@use 'index' as *;
+
+.enemyModule {
+    @include flex-container;
+    flex-direction: column;
+    width: 100%;
+    gap: 5%;
+
+    .header {
+        align-self: flex-start;
+        padding: 10px 0 10px 7px;
+        width: 40%;
+        margin: 0;
+        font-size: 24px;
+    }
+
+    section {
+        display: flex;
+        width: 95%;
+        margin: 1em;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 1em;
+    }
+}

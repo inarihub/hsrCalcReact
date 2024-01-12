@@ -1,12 +1,28 @@
 import classes from './UserModule.module.scss';
-import ClockBG from '@/assets/img/clock.png';
 import { Clock } from './clock/Clock';
+import { useEffect, useState } from 'react';
 
 export const UserModule = () => {
+    const [time, setTime] = useState(new Date());
+    let timer: NodeJS.Timeout;
+
+    useEffect(() => {
+        timer = setInterval(() => {
+            setTime(new Date())
+        }, 1000);
+
+        return function cleanup() {
+            clearInterval(timer);
+        }
+    })
+
     return (
         <div className={classes.userModuleContainer}>
             <Clock />
-            <p>Hello, guest</p>
+            <div className={classes.textInfo}>
+                <p>Hello, guest</p>
+                <p style={{ fontSize: '28px' }}>{time.toLocaleTimeString()}</p>
+            </div>
         </div>
     );
 }

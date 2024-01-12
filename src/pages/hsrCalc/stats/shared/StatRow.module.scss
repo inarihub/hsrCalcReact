@@ -1,0 +1,15 @@
+@use 'index' as *;
+
+.statRow {
+   @include flex-container(center, space-between);
+   width: 95%;
+   margin: 5px;
+   position: relative;
+
+    .userInput {
+        border-radius: 2px;
+        text-align: end;
+        width: 7em;
+        padding: 0.2em 0.3em 0.2em 0.2em;
+    }
+}

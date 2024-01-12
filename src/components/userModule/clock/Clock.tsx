@@ -8,17 +8,19 @@ function getRotateTransfrom(degree: number): React.CSSProperties {
 export const Clock = () => {
     let [date, setDate] = useState(new Date());
 
-    const timer = setInterval(() => {
-        setDate(new Date());
-    })
-    
-    useEffect(() => {
-        return () => {clearInterval(timer)};
-    });
-
     const secDegree = (date.getSeconds() * 6) % 360;
     const minDegree = (date.getMinutes() * 6) % 360;
     const hourDegree = (date.getHours() * 30 + minDegree / 15) % 360;
+
+    let timer: NodeJS.Timeout;
+    
+    useEffect(() => {
+        timer = setInterval(() => {
+            setDate(new Date());
+        }, 1000)
+
+        return () => {clearInterval(timer)};
+    });
 
     return (
         <div className={classes.handsBox}>
