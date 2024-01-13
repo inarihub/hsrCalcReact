@@ -1,8 +1,6 @@
 import { Fragment, memo, useEffect, useRef } from 'react';
 import classes from './StatRow.module.scss';
 import { getTitle } from './CharStatTitles';
-import { CharacterBuffsKey, CharacterStatKey } from '../char/Character';
-import { EnemyDebuffKey, EnemyDebuffsType, EnemyStatKey } from '../enemy/Enemy';
 import { EntityProperty } from '../Stat.types';
 
 type valueType = 'absolute' | 'percent';
@@ -16,8 +14,6 @@ interface StatRowProps {
     changeCallback?: (key: EntityProperty, value: number) => void;
 }
 
-let testOldValue: number = 0;
-let testValue: number = 0;
 let rendCount: number = 0;
 
 export const StatRow = memo(function StatRow(props: StatRowProps) {
@@ -60,20 +56,9 @@ export const StatRow = memo(function StatRow(props: StatRowProps) {
         </div>
     );
 }, function (prev: StatRowProps, next: StatRowProps): boolean {
-    console.log(prev.value, next.value)
     if (prev.value !== next.value || prev.changeCallback !== next.changeCallback) {
         rendCount++;
-        testOldValue = prev.value;
-        testValue = next.value;
         return false;
     }
     return true
 });
-
-// function (prev: StatRowProps, next: StatRowProps): boolean {
-//     console.log(prev.value, next.value)
-//     if (prev.value !== next.value ) {
-//         return false;
-//     }
-//     return true
-// }

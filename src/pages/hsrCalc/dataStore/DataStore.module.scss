@@ -39,5 +39,10 @@
         width: 95%;
         margin: 0 0 10px 0;
         flex-direction: row;
+
+        .loadSectionButtons {
+            display: flex;
+            gap: 5px;
+        }
     }
 }
