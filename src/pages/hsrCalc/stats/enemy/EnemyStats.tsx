@@ -40,8 +40,8 @@ export const EnemyStats = (props: EnemyStatsProps) => {
             <StatRow key='dmgTakenIncrease' value={debuffs['dmgTakenIncrease']} statType={'dmgTakenIncrease'} type='percent' changeCallback={changeEnemyDebuff} />
             <section className={classes.enemyBreakSection}>
                 <label htmlFor='isBrokenCheck'>Is enemy broken?</label>
-                <input id='isBrokenCheck' type='checkbox' checked={props.enemy.isBroken} onChange={e => {
-                    changeEnemyBrokenState(e.currentTarget.checked);
+                <input id='isBrokenCheck' type='checkbox' checked={props.enemy.isBroken} onInput={e => {
+                    changeEnemyBrokenState(!e.currentTarget.checked);
                 }}></input>
             </section>
         </div>

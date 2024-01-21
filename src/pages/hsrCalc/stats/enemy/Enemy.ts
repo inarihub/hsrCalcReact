@@ -1,7 +1,7 @@
-import { ElementDmgType } from "../Stat.types";
+import { ElementDmgTypes } from "../../../shared/Stat.types";
 
 export type EnemyStatKey = 'lvl' | 'res' | 'def';
-export type EnemyDebuffKey = 'defReduction' | 'resReduction' | 'dmgTakenIncrease' | 'brokenMultiplier';
+export type EnemyDebuffKey = 'defReduction' | 'resReduction' | 'dmgTakenIncrease';
 
 export interface EnemyStatsType {
     [key: string]: number;
@@ -19,7 +19,7 @@ export interface EnemyDebuffsType {
 
 export interface EnemyObj {
     lvl: number;
-    element: ElementDmgType;
+    element: ElementDmgTypes;
     stats: EnemyStatsType;
     debuffs: EnemyDebuffsType;
     isBroken: boolean;
@@ -27,12 +27,12 @@ export interface EnemyObj {
 
 export class Enemy {
     private _lvl: number;
-    private _element: ElementDmgType;
+    private _element: ElementDmgTypes;
     private _stats: EnemyStatsType;
     private _debuffs: EnemyDebuffsType;
     private _isBroken: boolean;
 
-    constructor(level: number = 95, element: ElementDmgType = 'fire',
+    constructor(level: number = 95, element: ElementDmgTypes = 'fire',
     stats: EnemyStatsType = getDefaultEnemyStats(), debuffs: EnemyDebuffsType = getDefaultEnemyDebuffs(), isBroken: boolean = false) {
         this._lvl = level;
         this._element = element;
@@ -56,7 +56,7 @@ export class Enemy {
         this._lvl = value;
         this.updateDefByLvl();
     }
-    set element(value: ElementDmgType) { this._element = value; }
+    set element(value: ElementDmgTypes) { this._element = value; }
     set stats(value: EnemyStatsType) { this._stats = value; }
     set debuffs(value: EnemyDebuffsType) { this._debuffs = value; }
     set isBroken(value: boolean) { this._isBroken = value; }

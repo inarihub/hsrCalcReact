@@ -1,0 +1,32 @@
+@use 'index' as *;
+
+.editModule {
+    @include statsContainer;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    gap: 0.5em;
+    height: 520px;
+    padding: 10px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+
+    .header {
+        @include header;
+    }
+
+    .typeRow {
+        @include flex-row;
+        width: 100%;
+        padding: 0 0 10px 0;
+    }
+
+    .effectsList {
+        @include listContainer;
+        gap: 0.5em;
+        width: 100%;
+        box-sizing: border-box;
+        flex-shrink: 1;
+        flex-grow: 1;
+    }
+}

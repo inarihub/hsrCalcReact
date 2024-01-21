@@ -1,0 +1,26 @@
+@use 'index' as *;
+
+.saveModule {
+    @include statsContainer;
+    width: 100%;
+    height: 100px;
+
+    .header {
+        @include header;
+    }
+
+    .saveControls {
+        @include flex-row;
+        width: 95%;
+        margin-top: 10px;
+
+        select {
+            appearance: none;
+            width: 8em;
+        }
+
+        input {
+            width: 10em;
+        }
+    }
+}

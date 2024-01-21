@@ -1,4 +1,4 @@
-import { EntityProperty } from "../Stat.types";
+import { EntityProperty } from "../../../shared/Stat.types";
 import { CharacterBuffsKey, CharacterStatKey } from "../char/Character";
 import { EnemyDebuffKey, EnemyStatKey } from "../enemy/Enemy";
 
@@ -15,6 +15,7 @@ const charTitles = {
     atkIncrease: 'Atk%',
     hpIncrease: 'HP%',
     defIncrease: 'Def%',
+    elemIncrease: 'ElementDmg%',
     dmgIncrease: 'Dmg%',
     defIgnore: 'Def Ignore',
     resPen: 'Res Pen'

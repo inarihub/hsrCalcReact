@@ -2,25 +2,62 @@ import { useEffect, useRef, useState } from 'react';
 import classes from './HSRCalc.module.scss';
 import { Results } from './results/Results';
 import { CharStats } from './stats/char/CharStats';
-import { StatSetList } from './stats/shared/StatSetList';
-import { ResultDmg } from './stats/Stat.types';
 import { EnemyStats } from './stats/enemy/EnemyStats';
 import { dmgResult } from './stats/DmgCalculation';
 import { Character } from './stats/char/Character';
-import { Enemy, EnemyStatsType } from './stats/enemy/Enemy';
+import { Enemy } from './stats/enemy/Enemy';
 import { DataStore } from './dataStore/DataStore';
+import { parseToSetup } from './services/store/SetupsStorage';
+import { BonusController } from './stats/bonuses/BonusController';
+
+const lsDefaultUser = 'defaultUserSetup';
+
+let setup = getDefaultSetup();
+
+function getDefaultSetup(): [Character, Enemy] {
+    const setupString = localStorage.getItem(lsDefaultUser);
+        const defaultUserSetup = JSON.parse(setupString ?? '{}'); // type default setup
+       
+        if (Object.keys(defaultUserSetup).length !== 0) {
+            const setup = parseToSetup(defaultUserSetup);
+            return [setup.char, setup.enemy];
+        }
+        
+        return [new Character(), new Enemy()];
+}
+
+let counter = 0;
 
 const HSRCalc = () => {
-    const [char, setChar] = useState<Character>(new Character());
-    const [enemy, setEnemy] = useState<Enemy>(new Enemy());
-    const inputRef = useRef<HTMLInputElement>(null);
-    const selectRef = useRef<HTMLSelectElement>(null);
+    const [char, setChar] = useState<Character>(setup[0]);
+    const [enemy, setEnemy] = useState<Enemy>(setup[1]);
+    
+    let charRef = useRef<Character>();
+    charRef.current = char;
 
-    const clearSetups = () => {
-        localStorage.clear();
-    };
+    let enemyRef = useRef<Enemy>();
+    enemyRef.current = enemy;
 
-    function charChangedHanlder(newCharStats: Character) {
+    function setDefaultByRef() {
+        const charObj = charRef.current.getCharObj();
+        const enemyObj = enemyRef.current.getEnemyObj();
+        localStorage.setItem(lsDefaultUser, JSON.stringify({ char: charObj, enemy: enemyObj }));
+    }
+
+    useEffect(() => {
+
+        window.addEventListener("beforeunload", e => {
+            setDefaultByRef();
+            return;
+        });
+
+        return () => {   
+            setDefaultByRef()
+            setup = [charRef.current, enemyRef.current];
+        };
+    }, []);
+
+    function charChangedHandler(newCharStats: Character) {
         setChar(() => {
             return newCharStats;
         });
@@ -33,19 +70,10 @@ const HSRCalc = () => {
     };
 
     function loadSetupHandler(char: Character, enemy: Enemy) {
-        charChangedHanlder(char);
+        charChangedHandler(char);
         enemyChangedHanlder(enemy);
     }
 
-    const options = () => {
-        let savedNames = [];
-        const ls = Object.entries(localStorage);
-        for (const name of ls) {
-            if (name[0].startsWith('.set__'))
-                savedNames.push(<option key={name[0].substring(6)} value={name[0].substring(6)}>{name[0].substring(6)}</option>);
-        }
-        return savedNames;
-    }
     const result = dmgResult(char, enemy);
 
     return (
@@ -55,21 +83,17 @@ const HSRCalc = () => {
             <div className={classes.row}>
 
                 <div className={classes.column}>
-                    <div className={classes.charStatsContainer}>
-                        <CharStats char={char} onCharChanged={charChangedHanlder} />
-                    </div>
+                    <CharStats char={char} onCharChanged={charChangedHandler} />
                 </div>
 
                 <div className={classes.column}>
-                    <div className={classes.enemyStatsContainer}>
-                        <EnemyStats enemy={enemy} onChangeCallback={enemyChangedHanlder} />
-                    </div>
-
-                    <div className={classes.resultsContainer}>
-                        <Results result={result} />
-                    </div>
-
+                    <EnemyStats enemy={enemy} onChangeCallback={enemyChangedHanlder} />
+                    <Results result={result} />
                     <DataStore char={char} enemy={enemy} loadCallback={loadSetupHandler} />
+                </div>
+
+                <div className={classes.column}>
+                    <BonusController />
                 </div>
 
             </div>

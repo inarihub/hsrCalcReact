@@ -5,8 +5,66 @@
 body {
     margin: 0;
     padding: 0;
-    min-width: max-content;
     color: white;
     font-family: $font-main;
     font-weight: normal;
+
+    p {
+        margin: 0;
+        padding: 0;
+    }
+
+    button {
+        background-color: $darkBlueBg;
+        color: white;
+        border: 1px solid $lightBlue;
+    }
+
+    button:active {
+        transform: scale(0.9, 0.9);
+    }
+
+    button:hover {
+        border-color: rgb(102, 204, 255);
+    }
+
+    select:enabled:hover {
+        border-color: rgb(102, 204, 255);
+    }
+
+    select {
+        @include selectBox;
+        width: 10em;
+
+        option {
+            @include optionBox;
+        }
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input {
+        appearance: textfield;
+        -moz-appearance: textfield;
+        font-family: $font-main;
+        margin: 0;
+        border: 1px solid black;
+        color: white;
+        background-color: rgba(32, 32, 41, 0.323);
+    }
+
+    input:focus {
+        box-shadow: none;
+        margin: 0;
+        outline: 1px solid rgb(149, 149, 205);
+    }
+
+    input::selection {
+        background-color: white;
+        color: black;
+    }
 }

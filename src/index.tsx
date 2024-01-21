@@ -1,9 +1,10 @@
 import { createRoot } from 'react-dom/client';
 import { App } from './components/App';
-import { Navigate, RouterProvider, createBrowserRouter, redirect } from 'react-router-dom';
+import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { HSRCalc } from './pages/hsrCalc';
 import { Help } from './pages/help';
 import { Suspense } from 'react';
+import { BonusSetManager } from './pages/bonusSetManager';
 
 const root = document.getElementById('root');
 
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
       {
         path: '/help',
         element: <Suspense fallback={'Loading...'}><Help /></Suspense>
+      },
+      {
+        path: '/bonusManager',
+        element: <Suspense fallback={'Loading...'}><BonusSetManager /></Suspense>
       },
       {
         path: '/hsrCalc',

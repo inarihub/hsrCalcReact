@@ -1,22 +1,37 @@
-@mixin flex-container($alignItems: center, $justifyCnt: center, $wrap: wrap) {
+@mixin flex-container($alignItems: center, $justifyCnt: center, $dir: column, $wrap: wrap) {
+    display: flex;
+    align-items: $alignItems;
+    justify-content: $justifyCnt;
+    flex-direction: $dir;
+    flex-wrap: $wrap;
+    box-sizing: border-box;
+}
+
+@mixin flex-row($alignItems: center, $justifyCnt: space-between, $dir: row, $wrap: nowrap) {
     display: flex;
     justify-content: $justifyCnt;
     align-items: $alignItems;
-    wrap: $wrap;
+    flex-direction: $dir;
+    flex-wrap: $wrap;
 }
 
-@mixin statsContainer($bgcolor: $moduleBG, $color: white, $align: center, $justifyCnt: space-between) {
+@mixin statsContainer($bgcolor: $moduleBG, $color: white, $align: center, $justifyCnt: flex-start) {
     @include flex-container($align, $justifyCnt);
-    flex-direction: column;
     background-color: $bgcolor;
     color: $color;
-    min-width: max-content;
     border: 1px solid $lightBlue;
     border-radius: 3px;
 }
 
+@mixin listContainer($align: center, $justifyCnt: flex-start, $gap: 0.5em, $flexBasis: auto) {
+    @include flex-container(center, flex-start, column, nowrap);
+    flex-basis: $flexBasis;
+    overflow-x: hidden;
+    overflow-y: auto;
+    gap: $gap;
+}
+
 @mixin optionBox($bgcolor: $backgroundInput, $color: white) {
-    background-color: $bgcolor;
     color: $color;
 }
 
@@ -26,4 +41,27 @@
     font-family: $font-main;
     padding: 0;
     border: 1px solid black;
+}
+
+@mixin row() {
+    @include flex-container(flex-start, flex-start, row, wrap);
+    gap: 1em;
+    height: max-content;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@mixin column() {
+    @include flex-container(flex-start, flex-start);
+    gap: 1em;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@mixin header() {
+    align-self: flex-start;
+        padding: 10px 0 10px 7px;
+        width: 40%;
+        margin: 0;
+        font-size: 24px;
 }

@@ -6,16 +6,16 @@
     height: fit-content;
     gap: 0.5em;
 
-    .header {
-        padding: 5px 0;
-        margin: 0;
-        font-size: 20px;
-    }
+    
 
     .headerSection {
         @include flex-container(center, space-between);
         flex-direction: row;
-        width: 95%;
+        width: 100%;
+
+        .header {
+            @include header;
+        }
 
         .statusText {
             text-align: right;
@@ -39,6 +39,10 @@
         width: 95%;
         margin: 0 0 10px 0;
         flex-direction: row;
+
+        select:disabled {
+            appearance: none;
+        }
 
         .loadSectionButtons {
             display: flex;

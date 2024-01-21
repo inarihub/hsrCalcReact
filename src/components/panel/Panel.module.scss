@@ -3,15 +3,15 @@
 $fadingLinGradient: linear-gradient(90deg, black 0%, $darkBlueBg 35%, black 100%);
 
 .mainPanel {
-    @include flex-container(center, flex-start);
+    @include flex-row(center, flex-start);
     height: 30px;
     padding: 0 5px;
     background: $fadingLinGradient;
+    box-sizing: border-box;
     
 
     .logoContainer {
-        @include flex-container(center, flex-start);
-        //border: 1px solid white;
+        @include flex-row;
         height: 100%;
 
         .logo {
@@ -20,7 +20,7 @@ $fadingLinGradient: linear-gradient(90deg, black 0%, $darkBlueBg 35%, black 100%
     }
 
     .navigationContainer {
-        @include flex-container(center, flex-start);
+        @include flex-row;
         padding: 0 0 0 10px;
         //border: 1px solid white;
         height: 100%;

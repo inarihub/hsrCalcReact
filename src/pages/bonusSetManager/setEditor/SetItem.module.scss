@@ -1,0 +1,26 @@
+@use 'index' as *;
+
+.effectBlock {
+    @include flex-row;
+    padding: 10px;
+    border-radius: 3px;
+    background-color: rgba(92, 163, 191, 0.534);
+    border: 1px solid $lightBlue;
+    height: max-content;
+    width: 100%;
+    box-sizing: border-box;
+
+    .mainOption {
+        width: 120px;
+        appearance: none;
+    }
+
+    .additionalOption {
+        width: 80px;
+        appearance: none;
+    }
+
+    .valueInput {
+        width: 60px;
+    }
+}

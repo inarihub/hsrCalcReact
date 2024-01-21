@@ -10,7 +10,8 @@ export const Panel = () => {
                 <img className={classes.logo} src={img} alt=''></img>
             </div>
             <div className={classes.navigationContainer}>
-                <button className={classes.navButton} onClick={() => navigate('/hsrCalc')}>HSRCalc</button>
+                <button className={classes.navButton} onClick={() => navigate('/hsrCalc')}>Calculator</button>
+                <button className={classes.navButton} onClick={() => navigate('/bonusManager')}>BonusSets</button>
                 <button className={classes.navButton} onClick={() => navigate('/help')}>Help</button>
             </div>
         </div>

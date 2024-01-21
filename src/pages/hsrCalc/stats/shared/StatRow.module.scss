@@ -1,7 +1,7 @@
 @use 'index' as *;
 
 .statRow {
-   @include flex-container(center, space-between);
+   @include flex-row;
    width: 95%;
    margin: 5px;
    position: relative;

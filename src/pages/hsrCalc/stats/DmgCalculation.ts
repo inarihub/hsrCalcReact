@@ -1,17 +1,19 @@
-import { ResultDmg } from './Stat.types';
+import { ResultDmg } from '../../shared/Stat.types';
 import { Character } from './char/Character';
 import { Enemy } from './enemy/Enemy';
 
 export const dmgResult = (character: Character, enemy: Enemy): ResultDmg => {
 
     if (!character || !enemy) {
-        return [111, 111, 111];
+        return [0, 0, 0];
     }
 
     const charStats = character.stats;
     const charBuffs = character.buffs;
+    
     const enemyStats = enemy.stats;
     const enemyDebuffs = enemy.debuffs;
+
     const brokenMultiplier = enemy.isBroken ? 1 : 0.9;
 
     const AttackerLvl = 80;
@@ -24,7 +26,7 @@ export const dmgResult = (character: Character, enemy: Enemy): ResultDmg => {
     const maxHPTarget = 400000;
 
     const baseDmg = (charStats[`base${character.srcStat}`] * (1 + charBuffs[`${character.srcStat}Increase`]) + charBuffs[`flat${character.srcStat}`]) * charStats.multiplier;
-    const dmgMultiplier = 1 + charBuffs.dmgIncrease;
+    const dmgMultiplier = 1 + charBuffs.dmgIncrease + charBuffs.elemIncrease;
 
     let totalDef = enemy.stats.def * (1 + defIncrease - (enemyDebuffs.defReduction + charBuffs.defIgnore));
 

@@ -10,7 +10,7 @@
     width: 100%;
 
     .resultRow {
-        @include flex-container(center, space-between);
+        @include flex-row;
         width: 100%;
 
         .attText {

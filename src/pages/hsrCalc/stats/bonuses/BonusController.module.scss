@@ -1,0 +1,31 @@
+@use 'index' as *;
+
+.bonusControllerContainer {
+    @include statsContainer($align: center, $justifyCnt: flex-start);
+    height: 520px;
+    width: 320px;
+
+    .headerSection {
+        @include flex-container(center, space-between);
+        flex-direction: row;
+        width: 95%;
+
+        .header {
+            padding: 5px 0;
+            margin: 0;
+            font-size: 20px;
+        }
+    }
+
+    .controlsPanel {
+        width: 100%;
+    }
+
+    .bonusSetsSection {
+        @include listContainer;
+        height: 80%;
+        padding: 10px 0 0 0;
+        width: 100%;
+        border: 1px solid white;
+    }
+}

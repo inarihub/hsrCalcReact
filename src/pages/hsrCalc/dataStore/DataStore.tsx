@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import classes from './DataStore.module.scss';
-import { Character, CharacterObj } from '../stats/char/Character';
-import { Enemy, EnemyObj } from '../stats/enemy/Enemy';
+import { Character } from '../stats/char/Character';
+import { Enemy } from '../stats/enemy/Enemy';
+import { SetupsList, lsSetupsKey, getSetups, parseToSetup, saveSetupToFile, importSetupFile, readSetupFile } from '../services/store/SetupsStorage';
 
 interface DataStoreProps {
     char: Character;
@@ -9,19 +10,13 @@ interface DataStoreProps {
     loadCallback?: (char: Character, enemy: Enemy) => void;
 }
 
-const lsSetupsKey = 'setups';
-
-interface Setups {
-    [name: string]: { char: CharacterObj, enemy: EnemyObj };
-}
-
-function buildOptionElements(obj: Setups): JSX.Element[] {
+function buildOptionElements(obj: SetupsList): JSX.Element[] {
 
     if (!obj) { return [] }
 
     const newOptions = [];
 
-    for (const name in obj) {
+    for (const name of Object.keys(obj).sort()) {
 
         newOptions.push(
             <option key={name} className={classes.options}>
@@ -33,44 +28,11 @@ function buildOptionElements(obj: Setups): JSX.Element[] {
     return newOptions;
 }
 
-function getSetups(): Setups {
-    const setups = localStorage.getItem(lsSetupsKey);
-    const parsedSetups: Setups = JSON.parse(setups ?? null);
-
-    return parsedSetups ?? {}; // fix
+function isSetupsEmpty(setups: SetupsList): boolean {
+    return Object.keys(setups).length === 0;
 }
 
-function importSetupFile(multiple = false, timeout = 10): Promise<FileList> {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.multiple = multiple;
-    input.click();
-
-    return new Promise((resolve, reject) => {
-        input.addEventListener("change", event => resolve(input.files));
-        setTimeout(() => reject(), timeout * 1000);
-    });
-}
-
-function readSetupFile(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-
-        const reader = new FileReader();
-
-        reader.onloadend = (e) => {
-            const content = e.target.result as string;
-            resolve(content);
-        };
-
-        reader.onerror = (e) => {
-            reject(e);
-        };
-
-        reader.readAsText(file);
-    });
-}
-
-export const DataStore = (props: DataStoreProps) => {
+export const DataStore = memo((props: DataStoreProps) => {
     const lsSetupsObj = JSON.parse(localStorage[lsSetupsKey] ?? null);
     const [options, setOptions] = useState(buildOptionElements(lsSetupsObj));
 
@@ -112,24 +74,18 @@ export const DataStore = (props: DataStoreProps) => {
         }
     };
 
-    const loadHanlder = () => {
+    const loadHandler = () => {
         const selector = selectorRef.current;
         let setupsObj = getSetups();
-        if (!setupsObj || Object.entries(setupsObj).length === 0) { return }
 
-        const char = setupsObj[selector.value].char;
-        const enemy = setupsObj[selector.value].enemy;
+        if (isSetupsEmpty(setupsObj) || !selector.value || selector.value === '') {
+            return;
+        }
 
-        const code = btoa(JSON.stringify(setupsObj));
+        const setup = parseToSetup(setupsObj[selector.value]);
 
-        console.log(code);
-        console.log(atob(code));
-
-        const newCharInstance = new Character(char.element, char.srcStat, char.stats, char.buffs);
-        const newEnemyInstance = new Enemy(enemy.lvl, enemy.element, enemy.stats, enemy.debuffs, enemy.isBroken);
-
-        if (newCharInstance && newEnemyInstance) {
-            props.loadCallback(newCharInstance, newEnemyInstance);
+        if (setup.char && setup.enemy) {
+            props.loadCallback(setup.char, setup.enemy);
         }
     };
 
@@ -137,9 +93,11 @@ export const DataStore = (props: DataStoreProps) => {
         const selector = selectorRef.current;
         let setupsObj = getSetups();
 
-        if (!setupsObj) { return }
+        if (isSetupsEmpty(setupsObj) || !selector.value || selector.value === '') {
+            return;
+        }
 
-        if (confirm(`Selected setup ${selector.value} will be deleted. Are you sure?`)) {
+        if (confirm(`Selected setup "${selector.value}" will be deleted. Are you sure?`)) {
             delete setupsObj[selector.value];
             const jsonSetups = JSON.stringify(setupsObj);
             localStorage.setItem(lsSetupsKey, jsonSetups);
@@ -149,38 +107,56 @@ export const DataStore = (props: DataStoreProps) => {
 
     const saveToFileHandler = () => {
 
-        let file = new File([JSON.stringify(getSetups() ?? null)], 'setups.json', { type: "text/plain:charset=UTF-8" });
-        const url = window.URL.createObjectURL(file);
+        const setups = getSetups();
 
-        const aElement = document.createElement("a");
-        aElement.setAttribute('style', "display: none");
-        aElement.href = url;
-        aElement.download = file.name;
-        aElement.click();
-        window.URL.revokeObjectURL(url);
-        aElement.remove();
+        if (isSetupsEmpty(setups)) {
+            return;
+        }
+
+        const setupsString = JSON.stringify(setups);
+        let file = new File([setupsString], 'setups.json', { type: "text/plain:charset=UTF-8" });
+
+        saveSetupToFile(file);
     };
 
     const importDataHandler = async (event: React.MouseEvent<HTMLButtonElement>) => {
 
         event.persist();
 
-        const files = await importSetupFile(false, 30);
-        let setupsObj = getSetups();
+        let files: FileList = undefined;
 
-        if (!files[0]) { 
-            alert('Reading from file went wrong');
-            return; 
+        try {
+            files = await importSetupFile(false, 600);
+        } catch(e) {
+            alert(e);
         }
 
-        const importedSetups = await readSetupFile(files[0]);
+        if (!files || !files[0]) { return; }
 
-        if (importedSetups.length === 0) { 
+        let setupsObj = getSetups();
+
+        let importedSetups: string;
+
+        try {
+            importedSetups = await readSetupFile(files[0]);
+        } catch(e) {
+            alert(e);
+        }
+        
+
+        if (importedSetups.length === 0) {
             alert('There is nothing to import');
             return;
         }
 
-        const parsedSetups = JSON.parse(importedSetups) as Setups;
+        let parsedSetups: SetupsList;
+
+        try {
+            parsedSetups = JSON.parse(importedSetups) as SetupsList;
+        } catch (e) {
+            alert('Wrong type of file!');
+            return;
+        }
 
         if (confirm('Do you want to SAVE all your previous setups?\n"OK" to ADD new setups, "Cancel" to CLEAR and ADD')) {
 
@@ -196,10 +172,10 @@ export const DataStore = (props: DataStoreProps) => {
 
                     while (setupsObj[newKey]) {
 
-                        if (reserveIndex > 999) { 
+                        if (reserveIndex > 999) {
                             throw new Error('Something went wrong with indexing new setup');
                         }
-                        
+
                         reserveIndex++;
                         newKey = setup.concat('(', reserveIndex.toString(), ')');
                     }
@@ -237,13 +213,15 @@ export const DataStore = (props: DataStoreProps) => {
 
             <div className={classes.loadSection}>
 
-                <select ref={selectorRef} className={classes.loadSelector}>
+                <select ref={selectorRef} className={classes.loadSelector}
+                    disabled={options.length === 0} defaultValue={''}>
+                    <option value={''} disabled hidden>-select setup-</option>
                     {options}
                 </select>
 
                 <section className={classes.loadSectionButtons}>
                     <button onClick={deleteHandler}>Delete</button>
-                    <button onClick={loadHanlder}>Load</button>
+                    <button onClick={loadHandler}>Load</button>
                 </section>
 
             </div>
@@ -251,8 +229,9 @@ export const DataStore = (props: DataStoreProps) => {
             <div className={classes.importExportSection}>
                 <button onClick={importDataHandler}>Import</button>
                 <button onClick={saveToFileHandler}>Export</button>
+                <button onClick={() => localStorage.clear()}>Clear</button>
             </div>
 
         </div>
     );
-};
+});

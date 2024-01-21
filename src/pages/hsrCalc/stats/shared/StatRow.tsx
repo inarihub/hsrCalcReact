@@ -1,7 +1,7 @@
 import { Fragment, memo, useEffect, useRef } from 'react';
 import classes from './StatRow.module.scss';
 import { getTitle } from './CharStatTitles';
-import { EntityProperty } from '../Stat.types';
+import { EntityProperty } from '../../../shared/Stat.types';
 
 type valueType = 'absolute' | 'percent';
 
@@ -17,17 +17,18 @@ interface StatRowProps {
 let rendCount: number = 0;
 
 export const StatRow = memo(function StatRow(props: StatRowProps) {
-    
+
     const isPercents = props.type === 'percent';
-    const value = isPercents ? props.value * 100 : props.value;
+    let value = isPercents ? props.value * 100 : props.value;
     const inputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        const value = Number.isNaN(props.value) ? 0 : props.value;
-        //inputRef.current.value = isPercents ? (value * 100).toFixed(1) : value.toString();
-    });
+    // useEffect(() => {
+    //     //const value = Number.isNaN(props.value) ? 0 : props.value;
+    //     //inputRef.current.value = isPercents ? (value * 100).toFixed(1) : value.toString();
+    // });
 
     const changeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.value === parseFloat(value.toFixed(2)).toString()) return;
 
         if (props.max && Number(event.currentTarget.value) > props.max) {
             event.currentTarget.value = props.max.toString();
@@ -36,8 +37,10 @@ export const StatRow = memo(function StatRow(props: StatRowProps) {
             event.currentTarget.value = event.currentTarget.value.substring(0, 9);
         }
 
-        const result = Number(event.currentTarget.value) ?? 0
-        props.changeCallback(props.statType, isPercents ? result / 100 : result);
+        let result = Number(event.currentTarget.value) < 0 ? event.currentTarget.value.substring(1) : event.currentTarget.value;
+        event.currentTarget.value = isPercents ? result : Number.parseInt(result).toString() ?? '0';
+
+        props.changeCallback(props.statType, isPercents ? Number(event.currentTarget.value) / 100 : Number.parseInt(event.currentTarget.value));
     };
 
     const title = getTitle(props.statType);
@@ -46,11 +49,16 @@ export const StatRow = memo(function StatRow(props: StatRowProps) {
 
     return (
         <div className={classes.statRow}>
-            <text>{title}</text>
+            <p>{title}</p>
             <div>
                 <input ref={inputRef} className={classes.userInput} style={inputStyleModifier}
-                    onFocus={e => e.currentTarget.select()} onChange={changeHandler}
-                    type="number" value={parseFloat(value.toFixed(2))} placeholder="0"></input>
+                    // onFocus={e => e.currentTarget.select()} onKeyDown={e => {
+                    //     if (e.key === '.') {
+                    //         e.preventDefault();
+                    //     }
+                    // }}
+                    onInput={changeHandler}
+                    type="number" value={parseFloat(value.toFixed(2))}></input>
                 {percentMark}
             </div>
         </div>

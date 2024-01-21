@@ -1,0 +1,27 @@
+@use 'index' as *;
+
+.bonusSetManagerMain {
+    @include flex-container(flex-start, flex-start, row);
+    gap: 1em;
+    box-sizing: border-box;
+    width: 100%;
+
+    .row {
+        @include row;
+
+        .column {
+            @include column;
+            width: 320px;
+            max-width: 320px;
+        }
+    }
+
+    // .saveLoadSection {
+    //     @include flex-container;
+    //     flex-direction: column;
+    //     flex-wrap: nowrap;
+    //     gap: 1em;
+    //     width: 320px;
+    //     height: max-content;
+    // }
+}

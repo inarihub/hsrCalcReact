@@ -1,21 +1,16 @@
 @use 'index' as *;
 
 .mainContainer {
-    @include flex-container(center, flex-start);
-    flex-direction: column;
+    @include statsContainer;
     width: 320px;
-    height: 30.7em;
+    height: 520px;
 
     .header {
-        align-self: flex-start;
-        padding: 10px 0 10px 7px;
-        width: 40%;
-        margin: 0;
-        font-size: 24px;
+        @include header;
     }
 
     .atkSection {
-        @include flex-container;
+        @include flex-row;
         flex-direction: column;
         width: 95%;
         border: 1px solid white;
@@ -23,7 +18,7 @@
     }
 
     .dmgSrcSection {
-        @include flex-container(center, space-between);
+        @include flex-row;
         width: 95%;
         margin: 0.3em;
         gap: 1em;
@@ -31,5 +26,10 @@
         select {
             width: 7em;
         }
+    }
+
+    .totalStatInfo {
+        padding: 10px 0;
+        text-align: right;
     }
 }

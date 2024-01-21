@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import classes from './Results.module.scss';
-import { ResultDmg } from '../stats/Stat.types';
+import { ResultDmg } from '../../shared/Stat.types';
 
 interface Results {
     result: ResultDmg;
 }
 
-export const Results = (props: Results) => {
+export const Results = memo((props: Results) => {
     const attNames = ['Damage', 'Crit.Dmg', 'Avg.Dmg'];
 
     return (
@@ -25,4 +25,9 @@ export const Results = (props: Results) => {
             </div>
         </div>
     );
-}
+}, function (prev, next) {
+    if (prev.result[0] !== next.result[0] || prev.result[1] !== next.result[1] || prev.result[2] !== next.result[2]) {
+        return false;
+    }
+    return true;
+});

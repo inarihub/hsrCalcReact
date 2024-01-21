@@ -1,25 +1,19 @@
 @use 'index' as *;
 
 .enemyModule {
-    @include flex-container;
+    @include statsContainer;
     flex-direction: column;
     width: 100%;
     gap: 5%;
 
     .header {
-        align-self: flex-start;
-        padding: 10px 0 10px 7px;
-        width: 40%;
-        margin: 0;
-        font-size: 24px;
+        @include header;
     }
 
-    section {
-        display: flex;
+    .enemyBreakSection {
+        @include flex-container(center, flex-end, row, nowrap);
         width: 95%;
-        margin: 1em;
-        justify-content: flex-end;
-        align-items: center;
+        margin: 10px 0;
         gap: 1em;
     }
 }
