@@ -1,26 +1,64 @@
 @use 'index' as *;
 
 .effectBlock {
-    @include flex-row;
-    padding: 10px;
+    @include flex-container($wrap: nowrap);
+ //fix. move to params
     border-radius: 3px;
     background-color: rgba(92, 163, 191, 0.534);
-    border: 1px solid $lightBlue;
     height: max-content;
-    width: 100%;
+    width: 280px;
+    padding: 10px;
+    flex-shrink: 0;
+    position: relative;
     box-sizing: border-box;
+    gap: 0.5em;
 
-    .mainOption {
-        width: 120px;
-        appearance: none;
+    .clearBtn {
+        position: absolute;
+        display: block;
+        overflow: visible;
+        height: 20px;
+        width: 20px;
+        top: 1px;
+        right: 1px;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
     }
 
-    .additionalOption {
-        width: 80px;
-        appearance: none;
-    }
+    .row {
+        @include flex-row($justifyCnt: flex-start);
+        gap: 0.5em;
+        width: 100%;
+        flex-shrink: 0;
 
-    .valueInput {
-        width: 60px;
+        .column {
+            @include flex-row;
+            height: max-content;
+            flex-shrink: 0;
+
+            .selectLabel {
+                font-size: 10px;
+                padding-right: 1em;
+            }
+
+            .mainOption {
+                width: 8.5em;
+            }
+
+            .additionalOption {
+                width: 8.5em;
+            }
+
+            .additionalOption:disabled {
+                opacity: 20%;
+            }
+
+            .valueInput {
+                text-align: end;
+                width: 7.5em;
+                box-sizing: border-box;
+            }
+        }
     }
 }

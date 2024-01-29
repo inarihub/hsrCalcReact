@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react';
 import classes from './CharStats.module.scss';
-import { ElementDmgTypes } from '../../../shared/Stat.types';
-import { StatRow } from '../shared/StatRow';
+import { AttackTypes, ElementDmgTypes, attackTypeValues } from '../../../shared/Stat.types';
+import {StatRow} from '../shared/StatRow';
 import { srcTypes, elementDmgTypes } from '../shared/StatDictionaries';
-import { Character, CharacterBuffsKey, CharacterBuffsType, CharacterStatKey, CharacterStatsType, SourceStatKey } from './Character';
-import { buffer } from 'stream/consumers';
+import { Character, CharacterBuffsKey, CharacterStatKey, SourceStatKey } from './Character';
 
 type OptionalSet = { percent: CharacterBuffsKey, base: CharacterStatKey, flat: CharacterBuffsKey };
 
@@ -13,9 +11,8 @@ interface CharStatsProps {
     onCharChanged: (char: Character) => void;
 }
 
-let counter = '';
-
 export const CharStats = (props: CharStatsProps) => {
+    const atkType = props.char.atkType;
     const srcStat = props.char.srcStat;
     const element = props.char.element;
     const charStats = props.char.stats;
@@ -25,39 +22,47 @@ export const CharStats = (props: CharStatsProps) => {
     let dynamic = statOpt(props.char.srcStat);
 
     const changeStatHandler = (statKey: CharacterStatKey, value: number) => {
-       props.onCharChanged(new Character(element, srcStat, { ...charStats, [statKey]: value }, charBuffs));
+       props.onCharChanged(new Character(atkType, element, srcStat, { ...charStats, [statKey]: value }, charBuffs));
     };
 
     const changeBuffsHandler = (buffKey: CharacterBuffsKey, value: number) => {
-       props.onCharChanged(new Character(element, srcStat, charStats, { ...charBuffs, [buffKey]: value }));
+       props.onCharChanged(new Character(atkType, element, srcStat, charStats, { ...charBuffs, [buffKey]: value }));
     };
+
+    let atkTypeSelectOptions = [];
+    for (const atkType of attackTypeValues) {
+        atkTypeSelectOptions.push(<option key={atkType} value={atkType}>{atkType[0].toUpperCase() + atkType.substring(1)}</option>)
+    }
 
     let srcStatSelectOptions = [];
     for (const srcName of srcTypes) {
-        srcStatSelectOptions.push(<option value={srcName}>{srcName[0].toUpperCase() + srcName.substring(1)}</option>);
+        srcStatSelectOptions.push(<option key={srcName} value={srcName}>{srcName[0].toUpperCase() + srcName.substring(1)}</option>);
     }
 
     let elementSelectOptions = [];
     for (const element of elementDmgTypes) {
-        elementSelectOptions.push(<option value={element}>{element[0].toUpperCase() + element.substring(1)}</option>);
+        elementSelectOptions.push(<option key={element} value={element}>{element[0].toUpperCase() + element.substring(1)}</option>);
     }
-
-    // let statRows = [
-    //     {name: 'baseatk', class: 'stat', type: 'absolute'},
-    //     {name: 'basehp', class: 'stat', type: 'absolute'},
-    //     {name: 'basedef', class: 'stat', type: 'absolute'},
-
-    // ];
 
     return (
         <div className={classes.mainContainer}>
             <p className={classes.header}>Character:</p>
 
             <section className={classes.dmgSrcSection}>
+                <label htmlFor='sourceStat'>Atk type:</label>
+                <select id='sourceStat' value={atkType} onInput={(e) => {
+                    const newAtkType = e.currentTarget.value as AttackTypes;
+                    props.onCharChanged(new Character(newAtkType, element, srcStat, charStats, charBuffs));
+                }}>
+                    {atkTypeSelectOptions}
+                </select>
+            </section>
+
+            <section className={classes.dmgSrcSection}>
                 <label htmlFor='sourceStat'>Dmg source:</label>
                 <select id='sourceStat' value={srcStat} onInput={(e) => {
                     const newSrcStat = e.currentTarget.value as SourceStatKey;
-                    props.onCharChanged(new Character(element, newSrcStat, charStats, charBuffs));
+                    props.onCharChanged(new Character(atkType, element, newSrcStat, charStats, charBuffs));
                 }}>
                     {srcStatSelectOptions}
                 </select>
@@ -67,7 +72,7 @@ export const CharStats = (props: CharStatsProps) => {
                 <label htmlFor='elementDmgType'>Element:</label>
                 <select id='elementDmgType' value={element} onInput={(e) => {
                     const newElement = e.currentTarget.value as ElementDmgTypes;
-                    props.onCharChanged(new Character(newElement, srcStat, charStats, charBuffs));
+                    props.onCharChanged(new Character(atkType, newElement, srcStat, charStats, charBuffs));
                 }}>
                     {elementSelectOptions}
                 </select>

@@ -1,0 +1,14 @@
+@use 'index' as *;
+
+.filterStackContainer {
+    @include flex-row;
+    width: 95%;
+
+        button {
+            flex-shrink: 0;
+            font-size: 10px;
+            width: 25%;
+            margin: 0;
+            padding: 5px;
+        }
+}

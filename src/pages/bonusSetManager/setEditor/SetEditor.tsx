@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import classes from './SetEditor.module.scss';
 import { SetItem } from './SetItem';
 import { BonusSet, BonusSetKey, BonusSetOptions } from '../BonusSet';
+import { AttackTypesWithAny, ElementDmgTypesWithAll } from '@/pages/shared/Stat.types';
 
 interface SetEditorProps {
     set?: BonusSet;
-    addBonusCallback?: (id: number, key: BonusSetKey, value: number, option: BonusSetOptions) => void;
+    addBonusCallback?: (id: number, key: BonusSetKey, value: number, atkTypeOption: AttackTypesWithAny | 'none', elemTypeOption: ElementDmgTypesWithAll | 'none') => void;
+    deleteBonusCallback?: (id: number) => void;
 }
 
 function createSetItems(props?: SetEditorProps) {
@@ -17,14 +19,15 @@ function createSetItems(props?: SetEditorProps) {
         let setItems: any[] = [];
 
         for (const item of props.set) {
-            setItems.push(<SetItem key={`item-${counter}`} set={{...item}} changeCallback={props.addBonusCallback} />)
+            setItems.push(<SetItem key={`item-${counter}`} set={{...item}} changeCallback={props.addBonusCallback} clearCallback={props.deleteBonusCallback} />)
             counter++;
         }
 
         return setItems;
     }
-
-    return [ <SetItem key={'item-0'} changeCallback={props.addBonusCallback} /> ];
+    
+    //fix
+    return [ <SetItem key={'item-0'} changeCallback={props.addBonusCallback} clearCallback={props.deleteBonusCallback} /> ];
 }
 
 export const SetEditor = (props: SetEditorProps) => {
@@ -44,7 +47,7 @@ export const SetEditor = (props: SetEditorProps) => {
 
             <div className={classes.effectsList} ref={lastRef}>
                 {items}
-                <button onClick={() => props.addBonusCallback(items.length, 'crrate', 0, 'none')}>New</button>
+                <button onClick={() => props.addBonusCallback(props.set.length, 'crrate', 0, 'none', 'none')}>Add</button>
             </div>
 
         </div>

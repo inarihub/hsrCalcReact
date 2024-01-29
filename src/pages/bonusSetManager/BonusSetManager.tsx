@@ -1,20 +1,69 @@
 import { useState } from 'react';
 import classes from './BonusSetManager.module.scss';
-import { SetSaver } from './setSaver/SetSaver';
+import { BonusSetTypes, SetSaver, TypedSetsObject, bonusSetTypeValues, bonusSetsLSKey } from './setSaver/SetSaver';
 import { SetSelector } from './setSelector/SetSelector';
 import { SetEditor } from './setEditor/SetEditor';
-import { BonusSet, BonusSetKey, BonusSetOptions, getBonusSet } from './BonusSet';
+import { BonusSet, BonusSetKey, getBonusSet } from './BonusSet';
+import { AttackTypesWithAny, ElementDmgTypesWithAll } from '../shared/Stat.types';
+
+export function getBonusSetObjects() {
+
+    let result: Map<BonusSetTypes, TypedSetsObject> = new Map();
+
+    for (const key of bonusSetTypeValues) {
+
+        const parsedObj: TypedSetsObject = JSON.parse(localStorage.getItem(bonusSetsLSKey + key));
+
+        if (parsedObj) {
+            result.set(key, parsedObj);
+        }  
+    }
+
+    return result;
+}
 
 const BonusSetManager = () => {
-    const [bonusSet, setBonusSet] = useState<BonusSet>([{id: 0, key: 'dmgIncrease', value: 1000, option: 'any' }, {id: 1, key: 'flathp', value: 500, option: 'none'}, {id: 2, key: 'crdmg', value: 500, option: 'none'}]);
-    
-    const addBonusHandler = (id: number, key?: BonusSetKey, value?: number, option?: BonusSetOptions) => {
 
-        if (!key && value === undefined && option === undefined) return;
+    const [keyList, setKeyList] = useState<Map<BonusSetTypes, TypedSetsObject>>(getBonusSetObjects()); 
+    const [bonusSet, setBonusSet] = useState<BonusSet>([{id: 0, key: 'dmgIncrease', value: 1, atkTypeOption: 'any', elemTypeOption: 'all' }]);
+    
+    const addBonusHandler = (id: number, key?: BonusSetKey, value?: number, atkTypeOption?: AttackTypesWithAny | 'none', elemTypeOption?: ElementDmgTypesWithAll | 'none') => {
+
+        if (!key && Number.isNaN(Number(value)) && !atkTypeOption && !elemTypeOption) return;
 
         setBonusSet((prev) => {
-            return getBonusSet(prev, id, key, value, option);;
+            return getBonusSet(prev, id, key, value, atkTypeOption, elemTypeOption);;
         })
+    };
+
+    const deleteBonusHandler = (id: number) => {
+        if (Number.isNaN(Number(id))) return;
+
+        setBonusSet((prev) => {
+            
+            const index = prev.findIndex(element => element.id === id);
+            
+            if (index === -1) {
+                alert("There's no bonus to delete");
+                return prev;
+            };
+
+            let newArr = [...prev];
+            newArr.splice(index, 1);
+
+            let i = 0;
+            newArr = newArr.map((element) => { return {...element, id: i++}});
+
+            return newArr;
+        })
+    };
+
+    const loadSetHandler = (bonusSet: BonusSet) => {
+        setBonusSet(bonusSet);
+    };
+
+    const updateSetsHandler = () => {
+        setKeyList(() => getBonusSetObjects());
     };
 
     return (
@@ -23,16 +72,15 @@ const BonusSetManager = () => {
             <div className={classes.row}>
 
                 <div className={classes.column}>
-                    <SetSaver />
-                    <SetSelector />
+                    <SetSaver set={bonusSet} updateCallback={updateSetsHandler}/>
+                    <SetSelector list={keyList} loadCallback={loadSetHandler} updateCallback={updateSetsHandler}/>
                 </div>
 
                 <div className={classes.column}>
-                    <SetEditor set={bonusSet} addBonusCallback={addBonusHandler}/>
-                    {Object.values(bonusSet[0])}<br></br>
-                    {Object.values(bonusSet[1])}<br></br>
-                    {Object.values(bonusSet[2])}
+                    <SetEditor set={bonusSet} addBonusCallback={addBonusHandler} deleteBonusCallback={deleteBonusHandler}/>
                 </div>
+
+                <p>{bonusSet[0].value}</p>
 
             </div>
 

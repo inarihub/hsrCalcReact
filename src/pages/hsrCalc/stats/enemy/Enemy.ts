@@ -1,7 +1,9 @@
 import { ElementDmgTypes } from "../../../shared/Stat.types";
 
 export type EnemyStatKey = 'lvl' | 'res' | 'def';
-export type EnemyDebuffKey = 'defReduction' | 'resReduction' | 'dmgTakenIncrease';
+
+export const enemyDebuffValues = ['defReduction' , 'resReduction' , 'dmgTakenIncrease'] as const;
+export type EnemyDebuffKey = typeof enemyDebuffValues[number];
 
 export interface EnemyStatsType {
     [key: string]: number;

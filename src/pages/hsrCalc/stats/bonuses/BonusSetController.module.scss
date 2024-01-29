@@ -1,0 +1,43 @@
+@use 'index' as *;
+
+.bonusControllerContainer {
+    @include statsContainer($align: center, $justifyCnt: flex-start);
+    height: 520px;
+    width: 320px;
+    gap: 10px;
+
+    .headerSection {
+        @include flex-container(center, space-between);
+        flex-direction: row;
+        width: 95%;
+
+        .header {
+            @include header;
+        }
+    }
+
+    .controlsPanel {
+        @include flex-row;
+        width: 95%;
+
+        .bonusSetList {
+            appearance: none;
+            width: 15em;
+
+            optgroup {
+                color: $vividLightBlue;
+                font-weight: 100;
+            }
+        }
+    }
+
+    .bonusSetsSection {
+        @include listContainer;
+        background-color: rgba(0, 0, 0, 0.148);
+        padding: 5px;
+        height: 75%;
+        min-height: 75%;
+        width: 95%;
+        border: 1px solid $lightBlue;
+    }
+}

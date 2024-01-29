@@ -12,6 +12,7 @@
     .resultRow {
         @include flex-row;
         width: 100%;
+        border-bottom: 1px solid $lightBlue;
 
         .attText {
             padding: 0.4em;

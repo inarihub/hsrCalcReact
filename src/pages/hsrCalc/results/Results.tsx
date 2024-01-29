@@ -12,16 +12,16 @@ export const Results = memo((props: Results) => {
     return (
         <div className={classes.resultsMain}>
             <div className={classes.resultRow}>
-                <text className={classes.attText}>{attNames[0]}</text>
-                <text className={classes.valueText}>{props.result[0]}</text>
+                <p className={classes.attText}>{attNames[0]}</p>
+                <p className={classes.valueText}>{props.result[0]}</p>
             </div>
             <div className={classes.resultRow}>
-                <text className={classes.attText}>{attNames[1]}</text>
-                <text className={classes.valueText}>{props.result[1]}</text>
+                <p className={classes.attText}>{attNames[1]}</p>
+                <p className={classes.valueText}>{props.result[1]}</p>
             </div>
-            <div className={classes.resultRow}>
-                <text className={classes.attText}>{attNames[2]}</text>
-                <text className={classes.valueText}>{props.result[2]}</text>
+            <div className={classes.resultRow} style={{borderBottom: 'none'}}>
+                <p className={classes.attText}>{attNames[2]}</p>
+                <p className={classes.valueText}>{props.result[2]}</p>
             </div>
         </div>
     );

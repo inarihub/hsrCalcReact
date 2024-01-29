@@ -1,3 +1,4 @@
+import { BonusSet } from "@/pages/bonusSetManager/BonusSet";
 import { Character, CharacterObj } from "../../stats/char/Character";
 import { Enemy, EnemyObj } from "../../stats/enemy/Enemy";
 
@@ -12,14 +13,14 @@ export interface SetupsList {
 export function getSetups(): SetupsList {
     const setups = localStorage.getItem(lsSetupsKey);
     if (!setups) {
-        alert('There is no setups yet');
+        console.log('There is no setups yet');
         return {};
     }
 
     const parsedSetups = JSON.parse(setups);
 
     if (!parsedSetups || Object.keys(parsedSetups).length === 0) {
-        alert('There is no setups yet');
+        console.log('There is no setups yet');
         return {};
     }
 
@@ -31,7 +32,7 @@ export function parseToSetup(setup: Setup): { char: Character, enemy: Enemy } {
     const char = setup.char;
     const enemy = setup.enemy;
 
-    const newCharInstance = new Character(char.element, char.srcStat, char.stats, char.buffs);
+    const newCharInstance = new Character(char.atkType, char.element, char.srcStat, char.stats, char.buffs);
     const newEnemyInstance = new Enemy(enemy.lvl, enemy.element, enemy.stats, enemy.debuffs, enemy.isBroken);
 
     return { char: newCharInstance, enemy: newEnemyInstance };

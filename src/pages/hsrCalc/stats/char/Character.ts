@@ -1,9 +1,22 @@
-import { ElementDmgTypes } from "../../../shared/Stat.types";
+import { AttackTypes, ElementDmgTypes } from "../../../shared/Stat.types";
+import { EnemyDebuffKey, EnemyStatKey } from "../enemy/Enemy";
 
 export type SourceStatKey = 'hp' | 'def' | 'atk';
-export type AttackType = 'any' | 'bonus' | 'dot' | 'ultimate' | 'skill' | 'basic' | 'talent';
-export type CharacterStatKey = 'multiplier' | 'baseatk' | 'basehp' | 'basedef';
-export type CharacterBuffsKey = 'crrate' | 'crdmg' | 'atkIncrease' | 'hpIncrease' | 'defIncrease' | 'flatatk' | 'flathp' | 'flatdef' | 'dmgIncrease' | 'elemIncrease' | 'defIgnore' | 'resPen';
+
+//ATTACKTYPE
+export const attackTypeValues = ['any', 'bonus', 'dot', 'ultimate', 'skill', 'basic', 'talent'] as const;
+export type AttackType = typeof attackTypeValues[number];
+
+//BASESTATS
+export const characterBaseStatValues = ['baseatk', 'basehp', 'basedef'] as const;
+export type CharacterBaseStatKey = typeof characterBaseStatValues[number];
+
+export type CharacterStatKey = 'multiplier' | CharacterBaseStatKey;
+
+//BUFFS
+export const characterBuffValues = ['crrate', 'crdmg', 'atkIncrease', 'hpIncrease', 'defIncrease', 'flatatk', 'flathp', 'flatdef', 'dmgIncrease', 'elemIncrease', 'defIgnore', 'resPen'] as const;
+export type CharacterBuffsKey = typeof characterBuffValues[number];
+
 export type CharacterStatInput = CharacterStatKey | CharacterBuffsKey | 'srcStat' | 'element';
 export type ChatacterStatValue = number | SourceStatKey | ElementDmgTypes;
 
@@ -33,6 +46,7 @@ export interface CharacterBuffsType {
 };
 
 export interface CharacterObj {
+    atkType: AttackTypes;
     element: ElementDmgTypes;
     srcStat: SourceStatKey;
     stats: CharacterStatsType;
@@ -40,14 +54,16 @@ export interface CharacterObj {
 }
 
 export class Character {
-
+    atkType: AttackTypes;
     element: ElementDmgTypes;
     srcStat: SourceStatKey;
     stats: CharacterStatsType;
     buffs: CharacterBuffsType;
 
-    constructor(element: ElementDmgTypes = 'fire', srcStat: SourceStatKey = 'atk',
+    constructor(atkType: AttackTypes = 'basic', element: ElementDmgTypes = 'fire', srcStat: SourceStatKey = 'atk',
         stats: CharacterStatsType = getDefaultStats(), buffs: CharacterBuffsType = getDefaultBuffs()) {
+
+        this.atkType = atkType ?? 'basic';
         this.element = element ?? 'fire';
         this.srcStat = srcStat ?? 'atk';
 
@@ -58,19 +74,19 @@ export class Character {
         }
 
         this.stats = stats;
-        
+
         for (const buff of Object.keys(getDefaultBuffs())) {
             if (buffs[buff] === undefined) {
                 buffs[buff] = 0;
                 console.log();
             }
         }
-        
+
         this.buffs = buffs;
     };
 
     getCharObj(): CharacterObj {
-        return { element: this.element, srcStat: this.srcStat, stats: this.stats, buffs: this.buffs };
+        return { atkType: this.atkType, element: this.element, srcStat: this.srcStat, stats: this.stats, buffs: this.buffs };
     }
 
     getCharTotalAtk(): number {

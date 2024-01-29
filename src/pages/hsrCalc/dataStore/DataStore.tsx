@@ -207,7 +207,7 @@ export const DataStore = memo((props: DataStoreProps) => {
             </div>
 
             <div className={classes.saveSection}>
-                <input ref={saveInputRef} className={classes.inputSave}></input>
+                <input ref={saveInputRef} maxLength={20} className={classes.inputSave}></input>
                 <button onClick={saveHandler}>Save</button>
             </div>
 

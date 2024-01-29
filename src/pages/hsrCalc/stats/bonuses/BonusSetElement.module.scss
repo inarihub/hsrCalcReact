@@ -1,0 +1,70 @@
+@use 'index' as *;
+
+.bonusSetContainer {
+    @include flex-container($justifyCnt: flex-start);
+    background-color: rgba(133, 233, 255, 0.111);
+    border: 1px solid $lightBlue;
+    padding-bottom: 5px;
+    border-radius: 3px;
+    width: 100%;
+    flex-shrink: 0;
+    height: max-content;
+
+    .headerSection {
+        @include flex-row;
+        width: 95%;
+
+        .titles {
+            @include flex-row();
+            gap: 0.3em;
+
+            .group {
+                @include header;
+                padding: 8px 0;
+                font-size: 12px;
+                color: $vividLightBlue;
+            }
+
+            .header {
+                @include header;
+                padding: 8px 0;
+                font-weight: bold;
+                font-size: 14px;
+            }
+        }
+
+        .controlButtonsSection {
+            @include flex-row;
+            gap: 5px;
+            
+            .controlButton {
+                box-sizing: border-box;
+                padding: 0;
+                height: 20px;
+                width: 20px;
+                font-size: 12px;
+                text-align: center;
+            }
+        }
+    }
+
+    .bonusesPreviewList {
+        @include flex-container($alignItems: center, $justifyCnt: flex-start, $wrap: nowrap);
+        max-height: 150px;
+        height: max-content;
+        width: 95%;
+        gap: 0.2em;
+        background-color: rgba(50, 50, 50, 0.505);
+        padding: 3px;
+        border: 1px solid $lightBlue;
+        overflow-x: hidden;
+        overflow-y: auto;
+
+        .bonus {
+            @include flex-row;
+            border-bottom: 1px dotted rgba(255, 255, 255, 0.4);
+            font-size: 11px;
+            width: 100%;
+        }
+    }
+}

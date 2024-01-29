@@ -1,15 +1,21 @@
 @use 'index' as *;
 
 .statRow {
-   @include flex-row;
-   width: 95%;
-   margin: 5px;
-   position: relative;
+    @include flex-row;
+    width: 95%;
+    margin: 5px;
+    position: relative;
 
-    .userInput {
-        border-radius: 2px;
-        text-align: end;
-        width: 7em;
-        padding: 0.2em 0.3em 0.2em 0.2em;
+    .inputSection {
+        @include flex-row;
+        width: auto;
+
+        .userInput {
+            display: inline;
+            border-radius: 2px;
+            text-align: end;
+            width: 7em;
+            padding: 0.2em 0.3em 0.2em 0.2em;
+        }
     }
 }

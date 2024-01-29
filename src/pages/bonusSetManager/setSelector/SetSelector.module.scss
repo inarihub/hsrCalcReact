@@ -9,17 +9,36 @@
         @include header;
     }
 
+    .buttonSection{
+        @include flex-row($justifyCnt: flex-end);
+        margin-bottom: 10px;
+        width: 95%;
+        gap: 10px;
+    }
+
     .setsList {
         overflow: auto;
         width: 95%;
-        height: 80%;
+        height: 78%;
         margin: 0;
         border: 1px solid black;
         color: white;
         background-color: rgba(32, 32, 41, 0.323);
 
+        optgroup {
+            color: gray;
+        }
+
         option:checked{
             background: rgb(20, 45, 79) linear-gradient(0deg, rgb(73, 95, 126) 50%, rgb(73, 95, 126) 50%);
         }
+    }
+
+    .setsList:hover {
+        border: 1px solid black;
+    }
+
+    select:focus {
+        outline: none;
     }
 }
