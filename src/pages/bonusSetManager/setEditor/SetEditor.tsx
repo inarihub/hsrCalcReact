@@ -3,6 +3,7 @@ import classes from './SetEditor.module.scss';
 import { SetItem } from './SetItem';
 import { BonusSet, BonusSetKey, BonusSetOptions } from '../BonusSet';
 import { AttackTypesWithAny, ElementDmgTypesWithAll } from '@/pages/shared/Stat.types';
+import { defaultSetItem } from '../BonusSetManager';
 
 interface SetEditorProps {
     set?: BonusSet;
@@ -26,8 +27,7 @@ function createSetItems(props?: SetEditorProps) {
         return setItems;
     }
     
-    //fix
-    return [ <SetItem key={'item-0'} changeCallback={props.addBonusCallback} clearCallback={props.deleteBonusCallback} /> ];
+    return [ ];
 }
 
 export const SetEditor = (props: SetEditorProps) => {
@@ -47,7 +47,9 @@ export const SetEditor = (props: SetEditorProps) => {
 
             <div className={classes.effectsList} ref={lastRef}>
                 {items}
-                <button onClick={() => props.addBonusCallback(props.set.length, 'crrate', 0, 'none', 'none')}>Add</button>
+                <button onClick={() => 
+                    props.addBonusCallback(props.set.length, defaultSetItem.key, defaultSetItem.value,
+                    defaultSetItem.atkTypeOption, defaultSetItem.elemTypeOption)}>Add</button>
             </div>
 
         </div>

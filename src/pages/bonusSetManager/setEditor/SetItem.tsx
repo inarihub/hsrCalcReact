@@ -95,7 +95,7 @@ export const SetItem = (props: SetItemProps) => {
            
         </div>
 
-        <button className={classes.clearBtn} onClick={() => props.clearCallback(props.set.id)}>x</button>
+        <button className={classes.clearBtn} onClick={(e) => props.clearCallback(props.set.id)}>x</button>
 
         {hasOptions ? (<div className={classes.row}>
 
@@ -110,7 +110,6 @@ export const SetItem = (props: SetItemProps) => {
             </section>
 
             <section className={classes.column}>
-                {/* <p className={classes.selectLabel}>Element: </p> */}
                 <select value={props.set.elemTypeOption} key={`add${keyNumber++}`} className={classes.additionalOption}
                     disabled={additionalElemOptions.length === 0} onInput={e => {
                         e.persist();

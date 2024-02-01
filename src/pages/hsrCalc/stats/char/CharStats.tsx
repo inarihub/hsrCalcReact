@@ -49,8 +49,8 @@ export const CharStats = (props: CharStatsProps) => {
             <p className={classes.header}>Character:</p>
 
             <section className={classes.dmgSrcSection}>
-                <label htmlFor='sourceStat'>Atk type:</label>
-                <select id='sourceStat' value={atkType} onInput={(e) => {
+                <label htmlFor='atkType'>Atk type:</label>
+                <select id='atkType' value={atkType} onInput={(e) => {
                     const newAtkType = e.currentTarget.value as AttackTypes;
                     props.onCharChanged(new Character(newAtkType, element, srcStat, charStats, charBuffs));
                 }}>

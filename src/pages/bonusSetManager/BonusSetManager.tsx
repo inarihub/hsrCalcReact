@@ -6,6 +6,16 @@ import { SetEditor } from './setEditor/SetEditor';
 import { BonusSet, BonusSetKey, getBonusSet } from './BonusSet';
 import { AttackTypesWithAny, ElementDmgTypesWithAll } from '../shared/Stat.types';
 
+export interface BonusItem {
+    id: number;
+    key: BonusSetKey;
+    value: number;
+    atkTypeOption: AttackTypesWithAny | 'none';
+    elemTypeOption: ElementDmgTypesWithAll | 'none';
+};
+
+export const defaultSetItem: BonusItem = {id: 0, key: 'dmgIncrease', value: 1, atkTypeOption: 'any', elemTypeOption: 'all' };
+
 export function getBonusSetObjects() {
 
     let result: Map<BonusSetTypes, TypedSetsObject> = new Map();
@@ -25,7 +35,7 @@ export function getBonusSetObjects() {
 const BonusSetManager = () => {
 
     const [keyList, setKeyList] = useState<Map<BonusSetTypes, TypedSetsObject>>(getBonusSetObjects()); 
-    const [bonusSet, setBonusSet] = useState<BonusSet>([{id: 0, key: 'dmgIncrease', value: 1, atkTypeOption: 'any', elemTypeOption: 'all' }]);
+    const [bonusSet, setBonusSet] = useState<BonusSet>([defaultSetItem]);
     
     const addBonusHandler = (id: number, key?: BonusSetKey, value?: number, atkTypeOption?: AttackTypesWithAny | 'none', elemTypeOption?: ElementDmgTypesWithAll | 'none') => {
 
@@ -52,7 +62,9 @@ const BonusSetManager = () => {
             newArr.splice(index, 1);
 
             let i = 0;
+            console.log(newArr);
             newArr = newArr.map((element) => { return {...element, id: i++}});
+            console.log(newArr);
 
             return newArr;
         })
@@ -79,8 +91,6 @@ const BonusSetManager = () => {
                 <div className={classes.column}>
                     <SetEditor set={bonusSet} addBonusCallback={addBonusHandler} deleteBonusCallback={deleteBonusHandler}/>
                 </div>
-
-                <p>{bonusSet[0].value}</p>
 
             </div>
 

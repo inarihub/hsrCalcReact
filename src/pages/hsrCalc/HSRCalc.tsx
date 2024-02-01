@@ -23,7 +23,8 @@ function getSavedState(): CalcStateObjects {
 
     if (Object.keys(defaultUserSetup).length !== 0) {
         const setup = parseToSetup(defaultUserSetup); // this is not setup anymore in terms of functionality. rename
-        return { char: setup.char ?? new Character(), enemy: setup.enemy ?? new Enemy(), bonuses: new Map(defaultUserSetup.bonuses) ?? new Map(), inactives: defaultUserSetup.inactives ?? [] }; // check if it is correct map
+        return { char: setup.char ?? new Character(), enemy: setup.enemy ?? new Enemy(), bonuses: new Map(defaultUserSetup.bonuses) ?? new Map(), inactives: [] }; // check if it is correct map
+        //HERE INACTIVES SHOULDNT BE EMPTY ARRAY
     }
 
     return { char: new Character(), enemy: new Enemy(), bonuses: new Map(), inactives: [] };
@@ -84,7 +85,7 @@ const HSRCalc = () => {
         charRef.current = char;
         enemyRef.current = enemy;
         bonusRef.current = bonusSets;
-        inactivesRef.current = inactiveBonuses;
+        //inactivesRef.current = inactiveBonuses;
     })
 
     function charChangedHandler(newCharStats: Character) {
