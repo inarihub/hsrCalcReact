@@ -1,10 +1,5 @@
-import { AttackTypesWithAny, DotElementDmgTypes, ElementDmgTypesWithAll, attackTypeValuesWithAny, dotElementTypeValues, dotElementTypeValuesWithAll, elementTypeValues, elementTypeValuesWithAll, isPercent } from "../shared/Stat.types";
-import { CharacterBuffsKey } from "../hsrCalc/stats/char/Character";
-import { EnemyDebuffKey } from "../hsrCalc/stats/enemy/Enemy";
-
-export type BonusSet = { id: number, key: BonusSetKey, value: number, atkTypeOption: AttackTypesWithAny | 'none', elemTypeOption: ElementDmgTypesWithAll | 'none' }[];
-export type BonusSetKey = CharacterBuffsKey | EnemyDebuffKey;
-export type BonusSetOptions = AttackTypesWithAny | ElementDmgTypesWithAll | 'none';
+import { AttackTypesWithAny, DotElementDmgTypes, ElementDmgTypesWithAll, attackTypeValuesWithAny, dotElementTypeValues, dotElementTypeValuesWithAll, elementTypeValuesWithAll, isPercent } from "./Stat.types";
+import { BonusItem, BonusSet, BonusSetKey } from "./BonusSetTypes";
 
 export function getBonusSet(set: BonusSet, id: number, key?: BonusSetKey, value?: number, atkTypeOption?: AttackTypesWithAny | 'none', elemTypeOption?: ElementDmgTypesWithAll | 'none'): BonusSet {
 
@@ -21,12 +16,6 @@ export function getBonusSet(set: BonusSet, id: number, key?: BonusSetKey, value?
         if (key && isPercent(searchedElement.key) !== isPercent(key)) {
             newValue = 0;
         }
-
-        // if (!isPercent(key) && newValue % 1 > 0) {
-        //     newValue = parseInt(newValue.toFixed(0));
-        // } else if (isPercent(key) && newValue % 0.0001 > 0) {
-        //     newValue = parseFloat(newValue.toFixed(4));
-        // }
 
         let newAtkOpt = atkTypeOption ?? searchedElement.atkTypeOption;
         let newElemOpt = elemTypeOption ?? searchedElement.elemTypeOption;
@@ -75,18 +64,12 @@ function getValidOptionsByKey(key: BonusSetKey)
     return result;
 }
 
-// function hasDmgIncreaseOption(x: unknown): x is AttackTypesWithAny {
-//     let result = false;
-//     for (const value of attackTypeValuesWithAny) {
-//         result ||= x === value;
-//     }
-//     return result;
-// }
+export function isBonusSet(bonusSet: BonusSet | unknown): bonusSet is BonusSet {
+    return Array.isArray(bonusSet) && (bonusSet.length === 0 || (bonusSet.length > 0 && bonusSet.every(e => isBonusItem(e))));
+}
 
-// function hasElemIncreaseOption(x: unknown): x is ElementDmgTypes {
-//     let result = false;
-//     for (const value of elementTypeValues) {
-//         result ||= x === value;
-//     }
-//     return result;
-// }
+export function isBonusItem(bonusItem: BonusItem | unknown): bonusItem is BonusItem {
+    return (bonusItem instanceof Object && bonusItem.hasOwnProperty('id') && bonusItem.hasOwnProperty('key') &&
+    bonusItem.hasOwnProperty('atkTypeOption') && bonusItem.hasOwnProperty('elemTypeOption') && bonusItem.hasOwnProperty('value') &&
+    typeof (bonusItem as BonusItem).id === 'number');
+}

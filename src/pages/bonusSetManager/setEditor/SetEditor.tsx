@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import classes from './SetEditor.module.scss';
 import { SetItem } from './SetItem';
-import { BonusSet, BonusSetKey, BonusSetOptions } from '../BonusSet';
 import { AttackTypesWithAny, ElementDmgTypesWithAll } from '@/pages/shared/Stat.types';
 import { defaultSetItem } from '../BonusSetManager';
+import { BonusSet, BonusSetKey } from '@/pages/shared/BonusSetTypes';
 
 interface SetEditorProps {
     set?: BonusSet;

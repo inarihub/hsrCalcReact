@@ -1,4 +1,3 @@
-import { BonusSet } from "@/pages/bonusSetManager/BonusSet";
 import { Character, CharacterObj } from "../../stats/char/Character";
 import { Enemy, EnemyObj } from "../../stats/enemy/Enemy";
 

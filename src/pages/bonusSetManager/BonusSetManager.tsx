@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import classes from './BonusSetManager.module.scss';
-import { BonusSetTypes, SetSaver, TypedSetsObject, bonusSetTypeValues, bonusSetsLSKey } from './setSaver/SetSaver';
+import { SetSaver, bonusSetsLSKey } from './setSaver/SetSaver';
 import { SetSelector } from './setSelector/SetSelector';
 import { SetEditor } from './setEditor/SetEditor';
-import { BonusSet, BonusSetKey, getBonusSet } from './BonusSet';
+import { getBonusSet } from '../shared/BonusSet';
 import { AttackTypesWithAny, ElementDmgTypesWithAll } from '../shared/Stat.types';
+import { BonusSet, BonusSetKey, bonusSetGroupKeysValues } from '../shared/BonusSetTypes';
+import { BonusSetProvider } from '../shared/BonusSetProvider';
 
 export interface BonusItem {
     id: number;
@@ -16,25 +18,27 @@ export interface BonusItem {
 
 export const defaultSetItem: BonusItem = {id: 0, key: 'dmgIncrease', value: 1, atkTypeOption: 'any', elemTypeOption: 'all' };
 
-export function getBonusSetObjects() {
+export function getStorageBonusSets(): BonusSetProvider {
 
-    let result: Map<BonusSetTypes, TypedSetsObject> = new Map();
+    let result = new BonusSetProvider();
 
-    for (const key of bonusSetTypeValues) {
+    for (const group of bonusSetGroupKeysValues) {
 
-        const parsedObj: TypedSetsObject = JSON.parse(localStorage.getItem(bonusSetsLSKey + key));
+        const groupMap = BonusSetProvider.parseMap(localStorage.getItem(bonusSetsLSKey + group));
 
-        if (parsedObj) {
-            result.set(key, parsedObj);
+        if (groupMap) {
+            result.addBonusSetGroup(group, groupMap);
         }  
     }
 
     return result;
 }
 
+const initialProvider = getStorageBonusSets();
+
 const BonusSetManager = () => {
 
-    const [keyList, setKeyList] = useState<Map<BonusSetTypes, TypedSetsObject>>(getBonusSetObjects()); 
+    const [provider, setProvider] = useState<BonusSetProvider>(initialProvider); 
     const [bonusSet, setBonusSet] = useState<BonusSet>([defaultSetItem]);
     
     const addBonusHandler = (id: number, key?: BonusSetKey, value?: number, atkTypeOption?: AttackTypesWithAny | 'none', elemTypeOption?: ElementDmgTypesWithAll | 'none') => {
@@ -75,7 +79,7 @@ const BonusSetManager = () => {
     };
 
     const updateSetsHandler = () => {
-        setKeyList(() => getBonusSetObjects());
+        setProvider(() => getStorageBonusSets());
     };
 
     return (
@@ -85,7 +89,7 @@ const BonusSetManager = () => {
 
                 <div className={classes.column}>
                     <SetSaver set={bonusSet} updateCallback={updateSetsHandler}/>
-                    <SetSelector list={keyList} loadCallback={loadSetHandler} updateCallback={updateSetsHandler}/>
+                    <SetSelector provider={provider} loadCallback={loadSetHandler} updateCallback={updateSetsHandler}/>
                 </div>
 
                 <div className={classes.column}>

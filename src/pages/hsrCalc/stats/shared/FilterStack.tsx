@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
 import classes from './FilterStack.module.scss';
-import { BonusSetTypes } from '@/pages/bonusSetManager/setSaver/SetSaver';
+import { BonusSetGroupKeys } from '@/pages/shared/BonusSetTypes';
 
 interface FilterStackProps {
-    contents: BonusSetTypes[];
+    contents: BonusSetGroupKeys[];
     updateCallback: (filters: string[]) => void;
 }
 
 export const FilterStack = (props: FilterStackProps) => {
 
-    const [activeFilter, setActiveFilter] = useState<BonusSetTypes[]>([]);
+    const [activeFilter, setActiveFilter] = useState<BonusSetGroupKeys[]>([]);
 
     const toggleHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
 
-        const value = e.currentTarget.value as BonusSetTypes;
+        const value = e.currentTarget.value as BonusSetGroupKeys;
         
         if (!value) throw new Error('Invalid group type of bonus sets');
 

@@ -1,23 +1,13 @@
 import { useRef } from 'react';
 import classes from './SetSaver.module.scss';
-import { BonusSet } from '../BonusSet';
+import { BonusSet, bonusSetGroupKeysValues } from '@/pages/shared/BonusSetTypes';
+import { BonusSetProvider } from '@/pages/shared/BonusSetProvider';
 
 export const bonusSetsLSKey = 'bonusset-';
-
-export const bonusSetTypeValues = ['weapon', 'teammate', 'relics', 'planars'] as const;
-export type BonusSetTypes = typeof bonusSetTypeValues[number];
 
 interface SetSaverProps {
     set: BonusSet;
     updateCallback?: () => void;
-};
-
-interface SetTypeObject {
-    [type: string]: TypedSetsObject;
-};
-
-export interface TypedSetsObject {
-    [key: string]: BonusSet;
 };
 
 export const SetSaver = (props: SetSaverProps) => {
@@ -27,7 +17,7 @@ export const SetSaver = (props: SetSaverProps) => {
 
     let typeSelectorOptions: JSX.Element[] = [];
 
-    for (const name of bonusSetTypeValues) {
+    for (const name of bonusSetGroupKeysValues) {
         typeSelectorOptions.push(<option key={name} value={name}>{name}</option>)
     }
 
@@ -43,21 +33,20 @@ export const SetSaver = (props: SetSaverProps) => {
             console.log('Current set is invalid');
         }
 
-        const allSetsOfType = localStorage.getItem(bonusSetsLSKey + typeSelector.current.value);
-
-        const itemObj: TypedSetsObject = allSetsOfType ? JSON.parse(allSetsOfType) : {};
+        const allSetsOfTypeStringObj = localStorage.getItem(bonusSetsLSKey + typeSelector.current.value);
+        const bonusGroupMap = BonusSetProvider.parseMap(allSetsOfTypeStringObj);
         const userKey = inputElement.current.value.trim();
         const selectedType = typeSelector.current.value;
 
-        if ((itemObj[userKey] && itemObj[userKey].length !== 0) && !confirm('Current set already exists. Do you want to override it?')) {
+        if ((bonusGroupMap.get(userKey) && bonusGroupMap.get(userKey).length !== 0) &&
+            !confirm('Current set already exists. Do you want to override it?')) {
             return;
         } else {
-            delete itemObj[userKey];
+            bonusGroupMap.delete(userKey);
         }
 
-        itemObj[userKey] = props.set;
-
-        const stringifiedBonusSets = JSON.stringify(itemObj);
+        bonusGroupMap.set(userKey, props.set);
+        const stringifiedBonusSets = BonusSetProvider.stringifyMap(bonusGroupMap);
         localStorage.setItem(bonusSetsLSKey + selectedType, stringifiedBonusSets);
 
         props.updateCallback();

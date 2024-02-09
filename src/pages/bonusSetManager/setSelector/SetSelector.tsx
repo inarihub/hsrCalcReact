@@ -1,16 +1,18 @@
-import { useRef } from 'react';
-import { BonusSet } from '../BonusSet';
-import { BonusSetTypes, TypedSetsObject, bonusSetsLSKey } from '../setSaver/SetSaver';
 import classes from './SetSelector.module.scss';
 import local from '@/pages/shared/StatDictionary';
+import { useRef } from 'react';
+import { bonusSetsLSKey } from '../setSaver/SetSaver';
+import { BonusSet, BonusSetGroupKeys } from '@/pages/shared/BonusSetTypes';
+import { BonusGroupMap, BonusGroupMapArrayLike, BonusSetProvider } from '@/pages/shared/BonusSetProvider';
 
 interface SetSelectorProps {
-    list: Map<BonusSetTypes, TypedSetsObject>;
+    provider: BonusSetProvider;
     loadCallback?: (bonusSet: BonusSet) => void;
     updateCallback?: () => void;
 }
 
-export function getSelectorDataBySelected(selector: HTMLSelectElement): { groupName: BonusSetTypes, value: string } {
+export function getSelectorDataBySelected(selector: HTMLSelectElement): { groupName: BonusSetGroupKeys, name: string } {
+
     if (!selector) {
         console.log('Parameter is invalid in getSelectorGroupName');
         return null;
@@ -23,51 +25,53 @@ export function getSelectorDataBySelected(selector: HTMLSelectElement): { groupN
 
     if (selector.selectedOptions[0]?.parentElement instanceof HTMLOptGroupElement) {
         const groupElement = selector.selectedOptions[0].parentElement as HTMLOptGroupElement;
-        const value = selector.selectedOptions[0].value;
-        return { groupName: groupElement.id as BonusSetTypes, value };
+        const groupName = groupElement.id as BonusSetGroupKeys;
+        const name = selector.selectedOptions[0].value;
+        return { groupName, name };
     }
 
     console.log("Something went wrong in 'getSelectorGroupName' function");
-    return {groupName: null, value: null};
+    return {groupName: null, name: null};
 }
 
-export function createOptionsFromList(list: Map<BonusSetTypes, TypedSetsObject>, filters?: BonusSetTypes[]) {
+export function createOptionsFromList(provider: BonusSetProvider, filters?: BonusSetGroupKeys[]) {
 
     const options: JSX.Element[] = [];
 
-    for (const [key, values] of list) {
+    provider.forEach((groupName, bonusMap) => {
 
-        if (!filters || filters.includes(key) || filters.length === 0) {
+        if (!filters || filters.includes(groupName) || filters.length === 0) {
 
             const groupOptions: JSX.Element[] = [];
 
-            for (const value of Object.keys(values)) {
-                groupOptions.push(<option key={value} value={value}>{value}</option>)
-            }
+            bonusMap.forEach((bonusSet, name) => {
+                groupOptions.push(<option key={name} value={name}>{name}</option>);
+            })
 
-            options.push(<optgroup key={key} id={key} label={local['en'][key]}>{groupOptions}</optgroup>);
+            options.push(<optgroup key={groupName} id={groupName} label={local['en'][groupName]}>{groupOptions}</optgroup>);
         }
-    }
+    })
 
     return options;
 }
 
-function parseBonusSet(stringGroupsJSON: string): TypedSetsObject;
+function parseBonusSet(stringGroupsJSON: string): BonusGroupMap;
 function parseBonusSet(stringGroupsJSON: string, index: string): BonusSet;
-function parseBonusSet(stringGroupsJSON: string, index?: string): BonusSet | TypedSetsObject {
+function parseBonusSet(stringGroupsJSON: string, index?: string): BonusSet | BonusGroupMap {
 
-    const parsedBonusSetGroups = JSON.parse(stringGroupsJSON ?? null) as TypedSetsObject;
+    const parsedBonusGroupArray = JSON.parse(stringGroupsJSON ?? null) as BonusGroupMapArrayLike;
+    const bonusSetMap = BonusSetProvider.groupMapFromArray(parsedBonusGroupArray);
 
-    if (!parsedBonusSetGroups) {
+    if (!bonusSetMap) {
         console.log('Error when parsing selected set!');
         return null;
     }
 
     if (!index) {
-        return parsedBonusSetGroups as TypedSetsObject;
+        return bonusSetMap as BonusGroupMap;
     }
 
-    const selectedObj = parsedBonusSetGroups[index] as BonusSet;
+    const selectedObj = bonusSetMap.get(index);
     if (!selectedObj) {
         console.log('Error when loading selected set!');
         return null;
@@ -82,12 +86,11 @@ export const SetSelector = (props: SetSelectorProps) => {
 
     const loadBonusSetHandler = () => {
 
-        const list = props.list;
-        const { groupName, value } = getSelectorDataBySelected(selectorRef.current);
+        const { groupName, name } = getSelectorDataBySelected(selectorRef.current);
 
-        if (groupName && value && list.get(groupName)) {
+        if (groupName && name && props.provider.getBonusSet(name, groupName)) {
 
-            const selectedObj = props.list.get(groupName)[value];
+            const selectedObj = props.provider.getBonusSet(name, groupName);
 
             if (selectedObj && confirm('Do you want to load set? It will reset current preset.')) {
                 props.loadCallback(selectedObj);
@@ -97,28 +100,28 @@ export const SetSelector = (props: SetSelectorProps) => {
 
     const deleteBonusSetHandler = () => {
 
-        const list = props.list;
-        const { groupName, value } = getSelectorDataBySelected(selectorRef.current);
+        const { groupName, name } = getSelectorDataBySelected(selectorRef.current);
 
-        if (groupName && value && list.get(groupName)) {
+        if (groupName && name) {
 
             const stringObj = localStorage.getItem(bonusSetsLSKey + groupName);
-            const typedSets = parseBonusSet(stringObj);
+            const groupMap = BonusSetProvider.parseMap(stringObj);
 
-            delete typedSets[value];
-            const newStringObj = JSON.stringify(typedSets);
+            if (groupMap.delete(name) && groupMap.size !== 0) {
 
-            if (Object.keys(typedSets).length === 0) {
-                localStorage.removeItem(bonusSetsLSKey + groupName);
-            } else {
+                const newStringObj = BonusSetProvider.stringifyMap(groupMap);
                 localStorage.setItem(bonusSetsLSKey + groupName, newStringObj);
+
+            } else if (groupMap.size === 0) {
+
+                localStorage.removeItem(bonusSetsLSKey + groupName);
             }
 
             props.updateCallback();
         }
     };
 
-    const options: JSX.Element[] = createOptionsFromList(props.list) ?? [];
+    const options: JSX.Element[] = createOptionsFromList(props.provider) ?? [];
 
     return (
         <div className={classes.setsListModule}>

@@ -1,12 +1,12 @@
 import { characterBaseStatValues, characterBuffValues } from '@/pages/hsrCalc/stats/char/Character';
 import classes from './SetItem.module.scss';
 import { enemyDebuffValues } from '@/pages/hsrCalc/stats/enemy/Enemy';
-import { BonusSetKey } from '../BonusSet';
-import { AttackTypesWithAny, ElementDmgTypesWithAll, attackTypeValuesWithAny, dotElementTypeValues, dotElementTypeValuesWithAll, elementTypeValuesWithAll, isPercent } from '@/pages/shared/Stat.types';
+import { AttackTypesWithAny, ElementDmgTypesWithAll, attackTypeValuesWithAny, dotElementTypeValuesWithAll, elementTypeValuesWithAll, isPercent } from '@/pages/shared/Stat.types';
 import { StatInputValidationService, StatKeyValidationService } from '@/pages/shared/StatInputServices';
 import { PercentFragment } from '@/pages/hsrCalc/stats/shared/PercentFragment';
 import { Fragment } from 'react';
 import local from '@/pages/shared/StatDictionary';
+import { BonusSetKey } from '@/pages/shared/BonusSetTypes';
 
 interface SetItemProps {
     set?: { id: number, key: BonusSetKey, value: number, atkTypeOption: AttackTypesWithAny | 'none', elemTypeOption: ElementDmgTypesWithAll | 'none' };

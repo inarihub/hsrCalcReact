@@ -9,63 +9,67 @@ import { Enemy } from './stats/enemy/Enemy';
 import { DataStore } from './dataStore/DataStore';
 import { parseToSetup } from './services/store/SetupsStorage';
 import { BonusSetController } from './stats/bonuses/BonusSetController';
-import { BonusSet } from '../bonusSetManager/BonusSet';
-import { BonusSetTypes } from '../bonusSetManager/setSaver/SetSaver';
+import { BonusSet, BonusSetGroupKeys } from '../shared/BonusSetTypes';
+import { BonusSetProvider, BonusSetProviderArrayLike } from '../shared/BonusSetProvider';
 
 const lsDefaultUser = 'defaultUserSetup';
 
 let calcObjectsState = getSavedState();
 
-function getSavedState(): CalcStateObjects {
+function getSavedState(): CalcBonusState {
 
     const setupString = localStorage.getItem(lsDefaultUser);
-    const defaultUserSetup = setupString ? JSON.parse(setupString) as CalcStateObjects : {} as CalcStateObjects;
+    const defaultUserSetup = setupString ? JSON.parse(setupString) as ParsedBonusStateObjects : {} as ParsedBonusStateObjects;
 
     if (Object.keys(defaultUserSetup).length !== 0) {
-        const setup = parseToSetup(defaultUserSetup); // this is not setup anymore in terms of functionality. rename
-        return { char: setup.char ?? new Character(), enemy: setup.enemy ?? new Enemy(), bonuses: new Map(defaultUserSetup.bonuses) ?? new Map(), inactives: [] }; // check if it is correct map
-        //HERE INACTIVES SHOULDNT BE EMPTY ARRAY
+        const setup = parseToSetup(defaultUserSetup);
+        return {
+            char: setup.char instanceof Character ? setup.char : new Character(),
+            enemy: setup.enemy instanceof Enemy ? setup.enemy : new Enemy(),
+            bonuses: BonusSetProvider.fromArray(defaultUserSetup.bonuses),
+        };
     }
 
-    return { char: new Character(), enemy: new Enemy(), bonuses: new Map(), inactives: [] };
+    return { char: new Character(), enemy: new Enemy(), bonuses: new BonusSetProvider() };
 }
 
 export interface BonusPathWithIDs {
-    group: BonusSetTypes;
+    group: BonusSetGroupKeys;
     name: string;
     ids: number[];
 }
 
 export interface BonusPath {
-    group: BonusSetTypes;
+    group: BonusSetGroupKeys;
     name: string;
 }
 
-interface CalcStateObjects {
+interface ParsedBonusStateObjects {
     char: Character,
     enemy: Enemy,
-    bonuses: Map<string, BonusSet>,
-    inactives: BonusPath[]
+    bonuses: BonusSetProviderArrayLike,
+}
+
+interface CalcBonusState {
+    char: Character,
+    enemy: Enemy,
+    bonuses: BonusSetProvider,
 }
 
 const HSRCalc = () => {
     const [char, setChar] = useState<Character>(calcObjectsState.char);
     const [enemy, setEnemy] = useState<Enemy>(calcObjectsState.enemy);
-    const [bonusSets, setBonusSets] = useState<Map<string, BonusSet>>(calcObjectsState.bonuses); //default? save state between loadings?
-    const [inactiveBonuses, setInactiveBonuses] = useState<BonusPath[]>(calcObjectsState.inactives);
+    const [bonusSets, setBonusSets] = useState<BonusSetProvider>(calcObjectsState.bonuses);
 
     let charRef = useRef<Character>(char);
     let enemyRef = useRef<Enemy>(enemy);
-    let bonusRef = useRef<Map<string, BonusSet>>(bonusSets);
-    let inactivesRef = useRef<BonusPath[]>(inactiveBonuses);
-    
+    let bonusRef = useRef<BonusSetProvider>(bonusSets);
 
     function setDefaultByRef() {
-        const charObj = charRef.current?.getCharObj();
-        const enemyObj = enemyRef.current?.getEnemyObj();
-        const bonusObj = [...bonusRef.current];
-        const inactivesObj = [...inactivesRef.current];
-        localStorage.setItem(lsDefaultUser, JSON.stringify({ char: charObj, enemy: enemyObj, bonus: bonusObj, inactives: inactivesObj }));
+        const charObj = charRef.current?.getCharObj() ?? new Character();
+        const enemyObj = enemyRef.current?.getEnemyObj() ?? new Enemy();
+        const bonusObj = BonusSetProvider.toArray(bonusRef.current);
+        localStorage.setItem(lsDefaultUser, JSON.stringify({ char: charObj, enemy: enemyObj, bonus: bonusObj }));
     }
 
     useEffect(() => {
@@ -77,7 +81,7 @@ const HSRCalc = () => {
 
         return () => {
             setDefaultByRef();
-            calcObjectsState = { char: charRef.current, enemy: enemyRef.current, bonuses: bonusRef.current, inactives: inactivesRef.current };
+            calcObjectsState = { char: charRef.current, enemy: enemyRef.current, bonuses: bonusRef.current };
         };
     }, []);
 
@@ -85,7 +89,6 @@ const HSRCalc = () => {
         charRef.current = char;
         enemyRef.current = enemy;
         bonusRef.current = bonusSets;
-        //inactivesRef.current = inactiveBonuses;
     })
 
     function charChangedHandler(newCharStats: Character) {
@@ -105,42 +108,19 @@ const HSRCalc = () => {
         enemyChangedHanlder(enemy);
     }
 
-    function loadBonusSetHandler(sets: Map<string, BonusSet>) {
+    function loadBonusSetHandler(sets: BonusSetProvider) {
         setBonusSets(sets);
-    }
-
-    function findInactiveBonusPath(pathObj: BonusPath, inactiveBonuses: BonusPath[]): number {
-
-        if (!Array.isArray(inactiveBonuses)) {
-            console.log('Missin array. Source: findInactiveBonusPath');
-            return -1;
-        }
-
-        return inactiveBonuses.findIndex(obj => obj.group === pathObj.group && obj.name === pathObj.name);
-    }
-
-    function setInactiveBonusesHandler(pathObj: BonusPath, isActive: boolean) {
-        setInactiveBonuses((prev) => {
-            if (isActive) {
-                const newList = [...prev];
-                const objIndex = findInactiveBonusPath(pathObj, inactiveBonuses);
-                newList.splice(objIndex, 1);
-                return newList;
-            }
-            else {
-                return [...prev, pathObj];
-            }
-        })
     }
 
     const allBonuses: BonusSet = [];
 
-    bonusSets.forEach((set, key) => {
-        const [group, name] = key.split('/_/');
-        if (inactiveBonuses.find(obj => obj.group === group && obj.name === name) === undefined) {
-            allBonuses.push(...set)
-        }
-    });
+    // bonusSets.getBonusSetMaps().forEach((set) => {
+    //     set.forEach((bonus) => {
+    //         if (bonus.isActive) {
+    //             allBonuses.push(...bonus.set);
+    //         }
+    //     })
+    // });
 
     const result = dmgResult(char, enemy, allBonuses);
 
@@ -161,8 +141,7 @@ const HSRCalc = () => {
                 </div>
 
                 <div className={classes.column}>
-                    <BonusSetController bonusSets={bonusSets} updateCallback={loadBonusSetHandler}
-                    hideBonusCallback={setInactiveBonusesHandler} />
+                    <BonusSetController provider={bonusSets} updateCallback={loadBonusSetHandler} />
                 </div>
 
             </div>
@@ -170,29 +149,5 @@ const HSRCalc = () => {
         </div>
     );
 }
-
-// export function getDefaultCharStats(): CharacterStatsType {
-//     return {
-//         multiplier: 0,
-//         hp: 0,
-//         def: 0,
-//         atk: 0,
-//         crrate: 0.05,
-//         crdmg: 0.5,
-//         baseatk: 0,
-//         basehp: 0,
-//         basedef: 0,
-//         flatatk: 0,
-//         flathp: 0,
-//         flatdef: 0,
-//         breakeffect: 0,
-//         atkIncrease: 0,
-//         hpIncrease: 0,
-//         defIncrease: 0,
-//         dmgIncrease: 0,
-//         defIgnore: 0,
-//         resPen: 0
-//     };
-// };
 
 export default HSRCalc;

@@ -1,17 +1,15 @@
-import { BonusSet } from '@/pages/bonusSetManager/BonusSet';
 import classes from './BonusSetElement.module.scss';
-import { BonusSetTypes } from '@/pages/bonusSetManager/setSaver/SetSaver';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { isPercent } from '@/pages/shared/Stat.types';
 import local from '@/pages/shared/StatDictionary';
 import { BonusPath, BonusPathWithIDs } from '../../HSRCalc';
+import { BonusSet, BonusSetGroupKeys } from '@/pages/shared/BonusSetTypes';
 
 interface BonusSetElementProps {
     title: string;
-    group?: BonusSetTypes;
+    group?: BonusSetGroupKeys;
     set: BonusSet;
-    deleteCallback: (groupName: BonusSetTypes, value: string) => void;
-    hideBonusCallback: (pathObj: BonusPath, isActive: boolean) => void;
+    deleteCallback: (groupName: BonusSetGroupKeys, value: string) => void;
 }
 
 export const BonusSetElement = (props: BonusSetElementProps) => {
@@ -21,9 +19,9 @@ export const BonusSetElement = (props: BonusSetElementProps) => {
 
     let bonusSetColumns = [];
 
-    useEffect(() => {
-        props.hideBonusCallback({group: props.group, name: props.title}, active);
-    }, [active]);
+    // useEffect(() => {
+    //     props.hideBonusCallback({group: props.group, name: props.title}, active);
+    // }, [active]);
 
     for (const bonus of props.set) {
 

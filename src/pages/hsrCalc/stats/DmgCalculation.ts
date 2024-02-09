@@ -1,4 +1,4 @@
-import { BonusSet, BonusSetKey } from '@/pages/bonusSetManager/BonusSet';
+import { BonusSet } from '@/pages/shared/BonusSetTypes';
 import { AllTypesStats, AttackTypesWithAny, ElementDmgTypesWithAll, ResultDmg } from '../../shared/Stat.types';
 import { Character } from './char/Character';
 import { Enemy } from './enemy/Enemy';
