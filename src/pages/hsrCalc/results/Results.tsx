@@ -7,21 +7,25 @@ interface Results {
 }
 
 export const Results = memo((props: Results) => {
-    const attNames = ['Damage', 'Crit.Dmg', 'Avg.Dmg'];
+
+    const attNames = {base: 'Damage', crit: 'Crit.Dmg', average: 'Avg.Dmg'};
+    const baseDmg = Math.floor(props.result[0]);
+    const critDmg = Math.floor(props.result[1]);
+    const avgDmg = Math.floor(props.result[2]);
 
     return (
         <div className={classes.resultsMain}>
             <div className={classes.resultRow}>
-                <p className={classes.attText}>{attNames[0]}</p>
-                <p className={classes.valueText}>{props.result[0]}</p>
+                <p className={classes.attText}>{attNames.base}</p>
+                <p className={classes.valueText}>{baseDmg}</p>
             </div>
             <div className={classes.resultRow}>
-                <p className={classes.attText}>{attNames[1]}</p>
-                <p className={classes.valueText}>{props.result[1]}</p>
+                <p className={classes.attText}>{attNames.crit}</p>
+                <p className={classes.valueText}>{critDmg}</p>
             </div>
             <div className={classes.resultRow} style={{borderBottom: 'none'}}>
-                <p className={classes.attText}>{attNames[2]}</p>
-                <p className={classes.valueText}>{props.result[2]}</p>
+                <p className={classes.attText}>{attNames.average}</p>
+                <p className={classes.valueText}>{avgDmg}</p>
             </div>
         </div>
     );

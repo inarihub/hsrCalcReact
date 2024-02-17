@@ -3,62 +3,66 @@ import classes from './BonusSetManager.module.scss';
 import { SetSaver, bonusSetsLSKey } from './setSaver/SetSaver';
 import { SetSelector } from './setSelector/SetSelector';
 import { SetEditor } from './setEditor/SetEditor';
-import { getBonusSet } from '../shared/BonusSet';
+import { getBonusItems, isBonusSet } from '../shared/BonusSet';
 import { AttackTypesWithAny, ElementDmgTypesWithAll } from '../shared/Stat.types';
-import { BonusSet, BonusSetKey, bonusSetGroupKeysValues } from '../shared/BonusSetTypes';
-import { BonusSetProvider } from '../shared/BonusSetProvider';
+import { BonusItem, BonusSet, BonusSetGroupKeys, BonusSetKey, bonusSetGroupKeysValues } from '../shared/BonusSetTypes';
+import { GroupedMap } from '../shared/GroupedMap';
+import { versionControlValidation } from '../shared/VersionControl';
 
-export interface BonusItem {
-    id: number;
-    key: BonusSetKey;
-    value: number;
-    atkTypeOption: AttackTypesWithAny | 'none';
-    elemTypeOption: ElementDmgTypesWithAll | 'none';
-};
+versionControlValidation();
 
-export const defaultSetItem: BonusItem = {id: 0, key: 'dmgIncrease', value: 1, atkTypeOption: 'any', elemTypeOption: 'all' };
+export const getDefaultSetItem = (id: number = 0): BonusItem => ({ id, key: 'dmgIncrease', value: 1, atkTypeOption: 'any', elemTypeOption: 'all' });
 
-export function getStorageBonusSets(): BonusSetProvider {
+export function isArrayLikeBonusGroup(array: [string, BonusSet][] | unknown): array is [string, BonusSet][] {
+    return (Array.isArray(array) && (array.every(e => typeof e[0] === 'string' && isBonusSet(e[1])) || array.length === 0));
+}
 
-    let result = new BonusSetProvider();
+export function getStorageBonusSets(): GroupedMap<BonusSetGroupKeys, BonusSet> {
+
+    let result = new GroupedMap<BonusSetGroupKeys, BonusSet>();
 
     for (const group of bonusSetGroupKeysValues) {
 
-        const groupMap = BonusSetProvider.parseMap(localStorage.getItem(bonusSetsLSKey + group));
+        const strItem = localStorage.getItem(bonusSetsLSKey + group);
 
-        if (groupMap) {
-            result.addBonusSetGroup(group, groupMap);
-        }  
+        if (strItem) {
+
+            const groupMapArrayLike = JSON.parse(localStorage.getItem(bonusSetsLSKey + group));
+
+            if (isArrayLikeBonusGroup(groupMapArrayLike)) {
+                const groupMap = new Map(groupMapArrayLike);
+                result.setGroupMap(group, groupMap);
+            }
+        }
     }
 
     return result;
 }
 
-const initialProvider = getStorageBonusSets();
-
 const BonusSetManager = () => {
 
-    const [provider, setProvider] = useState<BonusSetProvider>(initialProvider); 
-    const [bonusSet, setBonusSet] = useState<BonusSet>([defaultSetItem]);
-    
+    const [provider, setProvider] = useState<GroupedMap<BonusSetGroupKeys, BonusSet>>(getStorageBonusSets());
+    const [bonusItems, setBonusItems] = useState<BonusItem[]>([getDefaultSetItem()]);
+
     const addBonusHandler = (id: number, key?: BonusSetKey, value?: number, atkTypeOption?: AttackTypesWithAny | 'none', elemTypeOption?: ElementDmgTypesWithAll | 'none') => {
 
         if (!key && Number.isNaN(Number(value)) && !atkTypeOption && !elemTypeOption) return;
 
-        setBonusSet((prev) => {
-            return getBonusSet(prev, id, key, value, atkTypeOption, elemTypeOption);;
+        setBonusItems((prev) => {
+            return getBonusItems(prev, id, key, value, atkTypeOption, elemTypeOption);;
         })
     };
 
     const deleteBonusHandler = (id: number) => {
+
         if (Number.isNaN(Number(id))) return;
 
-        setBonusSet((prev) => {
-            
+        setBonusItems((prev) => {
+
             const index = prev.findIndex(element => element.id === id);
-            
+
             if (index === -1) {
-                alert("There's no bonus to delete");
+                console.log("There's no bonus to delete");
                 return prev;
             };
 
@@ -67,15 +71,15 @@ const BonusSetManager = () => {
 
             let i = 0;
             console.log(newArr);
-            newArr = newArr.map((element) => { return {...element, id: i++}});
+            newArr = newArr.map((element) => { return { ...element, id: i++ } });
             console.log(newArr);
 
             return newArr;
         })
     };
 
-    const loadSetHandler = (bonusSet: BonusSet) => {
-        setBonusSet(bonusSet);
+    const loadSetHandler = (bonusItems: BonusItem[]) => {
+        setBonusItems(bonusItems);
     };
 
     const updateSetsHandler = () => {
@@ -88,12 +92,12 @@ const BonusSetManager = () => {
             <div className={classes.row}>
 
                 <div className={classes.column}>
-                    <SetSaver set={bonusSet} updateCallback={updateSetsHandler}/>
-                    <SetSelector provider={provider} loadCallback={loadSetHandler} updateCallback={updateSetsHandler}/>
+                    <SetSaver set={bonusItems} updateCallback={updateSetsHandler} />
+                    <SetSelector provider={provider} loadCallback={loadSetHandler} updateCallback={updateSetsHandler} />
                 </div>
 
                 <div className={classes.column}>
-                    <SetEditor set={bonusSet} addBonusCallback={addBonusHandler} deleteBonusCallback={deleteBonusHandler}/>
+                    <SetEditor set={bonusItems} addBonusCallback={addBonusHandler} deleteBonusCallback={deleteBonusHandler} />
                 </div>
 
             </div>

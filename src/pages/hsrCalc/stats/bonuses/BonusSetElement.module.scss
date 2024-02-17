@@ -4,39 +4,47 @@
     @include flex-container($justifyCnt: flex-start);
     background-color: rgba(133, 233, 255, 0.111);
     border: 1px solid $lightBlue;
-    padding-bottom: 5px;
+    padding: 5px;
     border-radius: 3px;
+    gap: 0.3em;
     width: 100%;
     flex-shrink: 0;
     height: max-content;
 
     .headerSection {
-        @include flex-row;
-        width: 95%;
+        @include flex-row($alignItems: flex-end);
+        overflow-wrap: break-word;
+        width: 100%;
 
         .titles {
-            @include flex-row();
+            @include flex-row($alignItems: flex-end, $justifyCnt: flex-start);
+            max-width: 75%;
             gap: 0.3em;
 
             .group {
                 @include header;
-                padding: 8px 0;
-                font-size: 12px;
+                padding: 0;
+                font-size: 13px;
                 color: $vividLightBlue;
             }
 
             .header {
                 @include header;
-                padding: 8px 0;
+                padding: 0;
+                flex-grow: 0;
+                text-overflow: ellipsis;
                 font-weight: bold;
                 font-size: 14px;
+                overflow: hidden;
+                white-space: nowrap;
             }
         }
 
         .controlButtonsSection {
             @include flex-row;
+            width: 25%;
             gap: 5px;
-            
+
             .controlButton {
                 box-sizing: border-box;
                 padding: 0;
@@ -48,23 +56,76 @@
         }
     }
 
+    .compValuesSection {
+        @include flex-row($justifyCnt: flex-start);
+        width: 100%;
+        gap: 1em;
+        font-size: 10px;
+
+        .compValueBlock {
+            @include flex-row;
+            gap: 0.3em;
+        }
+    }
+
     .bonusesPreviewList {
         @include flex-container($alignItems: center, $justifyCnt: flex-start, $wrap: nowrap);
-        max-height: 150px;
+        gap: 0;
         height: max-content;
-        width: 95%;
-        gap: 0.2em;
+        width: 100%;
         background-color: rgba(50, 50, 50, 0.505);
-        padding: 3px;
-        border: 1px solid $lightBlue;
         overflow-x: hidden;
         overflow-y: auto;
 
+        :nth-child(n + 2 of .bonus) {
+            border-top: none;
+        }
+
         .bonus {
             @include flex-row;
-            border-bottom: 1px dotted rgba(255, 255, 255, 0.4);
-            font-size: 11px;
+            border: 1px solid $lightBlue;
+            font-size: 10px;
+            padding: 3px;
+            gap: 0.5em;
             width: 100%;
+            box-sizing: border-box;
+
+            .activationButton {
+                width: 18px;
+                height: 18px;
+                font-size: 10px;
+                align-items: center;
+                align-content: center;
+                text-align: center;
+                margin: 0;
+                padding: 0;
+            }
+
+            .mainBlock {
+                @include flex-container;
+                padding: 5px;
+                gap: 0.5em;
+                width: 90%;
+
+                .mainRow {
+                    @include flex-row($justifyCnt: flex-start);
+                    gap: 0.5em;
+                    width: 100%;
+                    border-bottom: 1px dotted rgba(255, 255, 255, 0.4);
+
+                    .bonusValue {
+                        font-size: 12;
+                        font-weight: bold;
+                        color: $vividLightBlue;
+                    }
+                }
+
+                .compValuesSection {
+                    @include flex-row($justifyCnt: flex-start);
+                    width: 100%;
+                    border-bottom: 1px dotted rgba(255, 255, 255, 0.4);
+                }
+            }
         }
     }
 }

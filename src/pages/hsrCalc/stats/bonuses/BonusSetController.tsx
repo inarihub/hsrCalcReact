@@ -1,15 +1,17 @@
 import { FilterStack } from '../shared/FilterStack';
 import classes from './BonusSetController.module.scss';
 import { BonusSetElement } from './BonusSetElement';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getStorageBonusSets } from '@/pages/bonusSetManager/BonusSetManager';
 import { createOptionsFromList, getSelectorDataBySelected } from '@/pages/bonusSetManager/setSelector/SetSelector';
-import { BonusSetGroupKeys } from '@/pages/shared/BonusSetTypes';
-import { BonusSetProvider } from '@/pages/shared/BonusSetProvider';
+import { BonusSetGroupKeys, ContextBonusSet } from '@/pages/shared/BonusSetTypes';
+import { BonusSetLib } from '../../HSRCalc';
+import { setBonusSetContext } from '@/pages/shared/BonusSet';
+import { GroupedMap } from '@/pages/shared/GroupedMap';
 
 interface BonusSetControllerProps {
-    provider: BonusSetProvider;
-    updateCallback: (provider: BonusSetProvider) => void;
+    provider: BonusSetLib;
+    updateCallback: (provider: BonusSetLib) => void;
 }
 
 export const BonusSetController = (props: BonusSetControllerProps) => {
@@ -19,6 +21,8 @@ export const BonusSetController = (props: BonusSetControllerProps) => {
     const selectorRef = useRef<HTMLSelectElement>(null);
     const bonusSetList = getStorageBonusSets();
 
+    const listRef = useRef<HTMLDivElement>(null);
+
     const updateFiltersHandler = (filters: BonusSetGroupKeys[]) => {
         setFilters(filters);
     }
@@ -27,32 +31,62 @@ export const BonusSetController = (props: BonusSetControllerProps) => {
         const selector = selectorRef.current;
 
         if (selector) {
-            const { groupName, name: name } = getSelectorDataBySelected(selector);
+            const { groupName, name } = getSelectorDataBySelected(selector);
 
-            if (groupName && name && bonusSetList.getBonusSet(name, groupName)) {
+            if (groupName && name && bonusSetList.getElement(name, groupName)) {
 
-                const selectedObj = bonusSetList.getBonusSet(name, groupName);
+                const bonusSet = bonusSetList.getElement(name, groupName);
+                const contextBonusSet = setBonusSetContext(bonusSet, true, [0, 0, 0]); // TODO: WRITE DEFAULT
 
-                if (selectedObj && !props.provider.getBonusSet(name, groupName)) {
-
-                    props.updateCallback(props.provider.getWith(name, groupName, selectedObj));
+                if (contextBonusSet) { // maybe check should i update state. or check here is it the same
+                    props.updateCallback(props.provider.getWith(contextBonusSet, name, groupName));
                 }
             }
         }
     };
 
-    const deleteHandler = (groupName: BonusSetGroupKeys, name: string) => {
+    const setActiveHandler = (name: string, groupName: BonusSetGroupKeys) => {
+        //if no parameters = isActive of set;
+        return (ids?: number | number[]) => {
 
-        if (groupName.length === 0 || name.length === 0) return;
+            function switchActive(id: number) {
+                const item = element.items.find(e => e.id === id);
 
-        if (props.provider.hasBonusSet(groupName, name)) {
-            props.updateCallback(props.provider.getWithout(name, groupName));
+                if (item) {
+                    item.isActive = !item.isActive;
+                }
+            }
+
+            let element = { ...props.provider.getElement(name, groupName) };
+
+            if (ids === undefined) {
+                element.isActive = !element.isActive;
+            } else if (Array.isArray(ids)) {
+                ids.forEach(e => switchActive(e));
+
+            } else {
+                switchActive(ids);
+            }
+
+            props.updateCallback(props.provider.getWith(element, name, groupName))
+        }
+    }
+
+    const deleteHandler = (name: string, groupName: BonusSetGroupKeys) => {
+
+        return () => {
+
+            if (groupName.length === 0 || name.length === 0) return;
+
+            if (props.provider.hasElement(name, groupName)) {
+                props.updateCallback(props.provider.getWithout(name, groupName));
+            }
         }
     };
 
     const clearHandler = () => {
-        if (props.provider.size !== 0) {
-            props.updateCallback(new BonusSetProvider()); // maybe clear func
+        if (props.provider.data.size !== 0) {
+            props.updateCallback(new GroupedMap<BonusSetGroupKeys, ContextBonusSet>());
         }
     };
 
@@ -60,14 +94,17 @@ export const BonusSetController = (props: BonusSetControllerProps) => {
 
     let currentBonusSets: JSX.Element[] = [];
 
-    props.provider.forEachBonusSets((groupName, name, bonusSet) => {
+    props.provider.data.forEach((groupMap, groupKey) => {
 
-        if (!filters || filters.includes(groupName) || filters.length === 0) {
+        if (!filters || filters.includes(groupKey) || filters.length === 0) {
 
-            currentBonusSets.push((
-                <BonusSetElement key={name} title={name} group={groupName} set={bonusSet} deleteCallback={deleteHandler} />
-            ));
+            groupMap.forEach((set, name) => {
 
+                currentBonusSets.push((
+                    <BonusSetElement key={name} set={set} setActiveCallback={setActiveHandler(name, groupKey)} deleteCallback={deleteHandler(name, groupKey)} />
+                ));
+
+            })
         }
     })
 
@@ -92,7 +129,7 @@ export const BonusSetController = (props: BonusSetControllerProps) => {
 
             <FilterStack contents={['weapon', 'teammate', 'relics', 'planars']} updateCallback={updateFiltersHandler} />
 
-            <div className={classes.bonusSetsSection}>
+            <div ref={listRef} className={classes.bonusSetsSection}>
                 {currentBonusSets}
             </div>
         </div>

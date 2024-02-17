@@ -16,11 +16,15 @@
 
         select {
             appearance: none;
-            width: 8em;
+            width: 6.5em;
         }
 
         input {
-            width: 10em;
+            width: 10.5em;
+        }
+
+        button {
+            width: 55px;
         }
     }
 }

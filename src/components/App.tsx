@@ -1,8 +1,9 @@
-import { useState } from 'react';
 import classes from './App.module.scss';
-import { Link, Outlet, redirect, useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { UserModule } from './userModule/UserModule';
 import { Panel } from './panel/Panel';
+
+declare const APP_VERSION: string;
 
 export const App = () => {
 
@@ -17,8 +18,8 @@ export const App = () => {
                     <UserModule />
                     <Outlet />
                 </div>
+                <p style={{fontSize: 14, textAlign: 'right', paddingRight: 14}}>ver.{APP_VERSION}</p>
             </div>
         </div>
-
     );
 };

@@ -1,7 +1,7 @@
 import { AttackTypesWithAny, DotElementDmgTypes, ElementDmgTypesWithAll, attackTypeValuesWithAny, dotElementTypeValues, dotElementTypeValuesWithAll, elementTypeValuesWithAll, isPercent } from "./Stat.types";
-import { BonusItem, BonusSet, BonusSetKey } from "./BonusSetTypes";
+import { BonusItem, BonusSet, BonusSetKey, ContextBonusItem, ContextBonusSet } from "./BonusSetTypes";
 
-export function getBonusSet(set: BonusSet, id: number, key?: BonusSetKey, value?: number, atkTypeOption?: AttackTypesWithAny | 'none', elemTypeOption?: ElementDmgTypesWithAll | 'none'): BonusSet {
+export function getBonusItems(set: BonusItem[], id: number, key?: BonusSetKey, value?: number, atkTypeOption?: AttackTypesWithAny | 'none', elemTypeOption?: ElementDmgTypesWithAll | 'none'): BonusItem[] {
 
     if ((!key && Number.isNaN(Number(value)) && !atkTypeOption && !elemTypeOption) || Number.isNaN(Number(id))) throw new Error('Something went wrong! origin: getBonusSet()');
 
@@ -43,7 +43,9 @@ export function getBonusSet(set: BonusSet, id: number, key?: BonusSetKey, value?
         const newAtkOpt = optionByKey.atkTypeOption;
         const newElemOpt = optionByKey.elemTypeOption;
 
-        return [...set, { id, key: newKey, value: newValue, atkTypeOption: newAtkOpt, elemTypeOption: newElemOpt }];
+        const newItems = [...set, { id, key: newKey, value: newValue, atkTypeOption: newAtkOpt, elemTypeOption: newElemOpt }];
+
+        return newItems;
     }
 };
 
@@ -65,11 +67,24 @@ function getValidOptionsByKey(key: BonusSetKey)
 }
 
 export function isBonusSet(bonusSet: BonusSet | unknown): bonusSet is BonusSet {
-    return Array.isArray(bonusSet) && (bonusSet.length === 0 || (bonusSet.length > 0 && bonusSet.every(e => isBonusItem(e))));
+    return (bonusSet instanceof Object && bonusSet.hasOwnProperty('name') &&
+    bonusSet.hasOwnProperty('type') && bonusSet.hasOwnProperty('items'));
 }
 
-export function isBonusItem(bonusItem: BonusItem | unknown): bonusItem is BonusItem {
-    return (bonusItem instanceof Object && bonusItem.hasOwnProperty('id') && bonusItem.hasOwnProperty('key') &&
-    bonusItem.hasOwnProperty('atkTypeOption') && bonusItem.hasOwnProperty('elemTypeOption') && bonusItem.hasOwnProperty('value') &&
-    typeof (bonusItem as BonusItem).id === 'number');
+export function isContextBonusSet(cBonusSet: ContextBonusSet | unknown): cBonusSet is ContextBonusSet {
+    return (cBonusSet instanceof Object && cBonusSet.hasOwnProperty('isActive') &&
+    cBonusSet.hasOwnProperty('comparisonValue') && isBonusSet(cBonusSet));
+}
+
+// export function isBonusItem(bonusItem: BonusItem | unknown): bonusItem is BonusItem {
+//     return (bonusItem instanceof Object && bonusItem.hasOwnProperty('id') && bonusItem.hasOwnProperty('key') &&
+//     bonusItem.hasOwnProperty('atkTypeOption') && bonusItem.hasOwnProperty('elemTypeOption') && bonusItem.hasOwnProperty('value') &&
+//     typeof (bonusItem as BonusItem).id === 'number');
+// }
+
+export function setBonusSetContext(obj: BonusSet, isActive: boolean, comparisonValue: [number, number, number]) {
+    return {...obj, isActive, comparisonValue, items: obj.items.map(e => {
+        const newElement = {...e, isActive, comparisonValue} as ContextBonusItem;
+        return newElement;
+    })} as ContextBonusSet;
 }

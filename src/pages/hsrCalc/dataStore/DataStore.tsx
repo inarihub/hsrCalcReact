@@ -2,12 +2,16 @@ import { memo, useRef, useState } from 'react';
 import classes from './DataStore.module.scss';
 import { Character } from '../stats/char/Character';
 import { Enemy } from '../stats/enemy/Enemy';
-import { SetupsList, lsSetupsKey, getSetups, parseToSetup, saveSetupToFile, importSetupFile, readSetupFile } from '../services/store/SetupsStorage';
+import { SetupsList, lsSetupsKey, getSetups, saveToJSONFile, loadJSONFile, readJSONFileAsText } from '../services/store/SetupsStorage';
+import { setToLocalStorage } from '@/pages/shared/DataStoreUtils';
+import { BonusSetLib } from '../HSRCalc';
+import { GroupedMap } from '@/pages/shared/GroupedMap';
 
 interface DataStoreProps {
     char: Character;
     enemy: Enemy;
-    loadCallback?: (char: Character, enemy: Enemy) => void;
+    bonuses: BonusSetLib;
+    loadCallback?: (char: Character, enemy: Enemy, bonuses: BonusSetLib) => void;
 }
 
 function buildOptionElements(obj: SetupsList): JSX.Element[] {
@@ -30,6 +34,24 @@ function buildOptionElements(obj: SetupsList): JSX.Element[] {
 
 function isSetupsEmpty(setups: SetupsList): boolean {
     return Object.keys(setups).length === 0;
+}
+
+export function getNameForSetupCopy(obj: { [name: string]: any }, oldName: string) {
+
+    let newName = oldName;
+    let reserveIndex = 0;
+
+    while (obj[newName]) {
+
+        if (reserveIndex > 999) {
+            throw new Error('Something went wrong with indexing new setup');
+        }
+
+        reserveIndex++;
+        newName = oldName.concat('(', reserveIndex.toString(), ')');
+    }
+
+    return newName;
 }
 
 export const DataStore = memo((props: DataStoreProps) => {
@@ -55,11 +77,13 @@ export const DataStore = memo((props: DataStoreProps) => {
 
                 setupsObj[input.value] = {
                     char: props.char.getCharObj(),
-                    enemy: props.enemy.getEnemyObj()
+                    enemy: props.enemy.getEnemyObj(),
+                    bonuses: GroupedMap.toArray(props.bonuses)
                 };
 
                 const lsNewItem = JSON.stringify(setupsObj);
-                localStorage.setItem(lsSetupsKey, lsNewItem);
+                setToLocalStorage(lsSetupsKey, lsNewItem);
+
                 setOptions(buildOptionElements(setupsObj));
 
                 saveInputRef.current.value = '';
@@ -75,6 +99,7 @@ export const DataStore = memo((props: DataStoreProps) => {
     };
 
     const loadHandler = () => {
+
         const selector = selectorRef.current;
         let setupsObj = getSetups();
 
@@ -82,10 +107,14 @@ export const DataStore = memo((props: DataStoreProps) => {
             return;
         }
 
-        const setup = parseToSetup(setupsObj[selector.value]);
+        const { char, enemy, bonuses } = setupsObj[selector.value];
 
-        if (setup.char && setup.enemy) {
-            props.loadCallback(setup.char, setup.enemy);
+        const newCharInstance = new Character(char.atkType, char.element, char.srcStat, char.stats, char.buffs);
+        const newEnemyInstance = new Enemy(enemy.lvl, enemy.element, enemy.stats, enemy.debuffs, enemy.isBroken);
+        const newBonusSetInstance = new GroupedMap(bonuses);
+
+        if (newCharInstance && newEnemyInstance) {
+            props.loadCallback(newCharInstance, newEnemyInstance, newBonusSetInstance);
         }
     };
 
@@ -105,7 +134,7 @@ export const DataStore = memo((props: DataStoreProps) => {
         }
     };
 
-    const saveToFileHandler = () => {
+    const exportDataHandler = () => {
 
         const setups = getSetups();
 
@@ -116,19 +145,18 @@ export const DataStore = memo((props: DataStoreProps) => {
         const setupsString = JSON.stringify(setups);
         let file = new File([setupsString], 'setups.json', { type: "text/plain:charset=UTF-8" });
 
-        saveSetupToFile(file);
+        saveToJSONFile(file);
     };
 
     const importDataHandler = async (event: React.MouseEvent<HTMLButtonElement>) => {
 
-        event.persist();
-
         let files: FileList = undefined;
 
         try {
-            files = await importSetupFile(false, 600);
-        } catch(e) {
-            alert(e);
+            files = await loadJSONFile(false, 600);
+        } catch (e) {
+            console.log(e);
+            return;
         }
 
         if (!files || !files[0]) { return; }
@@ -138,13 +166,13 @@ export const DataStore = memo((props: DataStoreProps) => {
         let importedSetups: string;
 
         try {
-            importedSetups = await readSetupFile(files[0]);
-        } catch(e) {
-            alert(e);
+            importedSetups = await readJSONFileAsText(files[0]);
+        } catch (e) {
+            console.log(e);
+            return;
         }
-        
 
-        if (importedSetups.length === 0) {
+        if (!importedSetups || importedSetups.length === 0) {
             alert('There is nothing to import');
             return;
         }
@@ -154,31 +182,20 @@ export const DataStore = memo((props: DataStoreProps) => {
         try {
             parsedSetups = JSON.parse(importedSetups) as SetupsList;
         } catch (e) {
-            alert('Wrong type of file!');
+            console.log('Wrong type of file!');
             return;
         }
 
         if (confirm('Do you want to SAVE all your previous setups?\n"OK" to ADD new setups, "Cancel" to CLEAR and ADD')) {
 
-            const doRewriteItems = confirm('Do you want to override setups if when conflict?\n"Cancel" to add with new names');
+            const doRewriteItems = confirm('Do you want to override setups on name conflict?\n"Cancel" to add with new names');
 
             for (const setup in parsedSetups) {
 
                 let newKey = setup;
 
                 if (!doRewriteItems) {
-
-                    let reserveIndex = 0;
-
-                    while (setupsObj[newKey]) {
-
-                        if (reserveIndex > 999) {
-                            throw new Error('Something went wrong with indexing new setup');
-                        }
-
-                        reserveIndex++;
-                        newKey = setup.concat('(', reserveIndex.toString(), ')');
-                    }
+                    newKey = getNameForSetupCopy(setupsObj, setup);
                 }
 
                 setupsObj[newKey] = parsedSetups[setup];
@@ -228,7 +245,7 @@ export const DataStore = memo((props: DataStoreProps) => {
 
             <div className={classes.importExportSection}>
                 <button onClick={importDataHandler}>Import</button>
-                <button onClick={saveToFileHandler}>Export</button>
+                <button onClick={exportDataHandler}>Export</button>
                 <button onClick={() => localStorage.clear()}>Clear</button>
             </div>
 

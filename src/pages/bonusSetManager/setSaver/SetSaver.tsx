@@ -1,14 +1,20 @@
 import { useRef } from 'react';
 import classes from './SetSaver.module.scss';
-import { BonusSet, bonusSetGroupKeysValues } from '@/pages/shared/BonusSetTypes';
-import { BonusSetProvider } from '@/pages/shared/BonusSetProvider';
+import { BonusItem, BonusSet, BonusSetGroupKeys, bonusSetGroupKeysValues, isBonusSetGroupKey } from '@/pages/shared/BonusSetTypes';
+import { isBonusSet } from '@/pages/shared/BonusSet';
+import { isArrayLikeBonusGroup } from '../BonusSetManager';
+import { GroupedMap } from '@/pages/shared/GroupedMap';
 
 export const bonusSetsLSKey = 'bonusset-';
 
 interface SetSaverProps {
-    set: BonusSet;
+    set: BonusItem[];
     updateCallback?: () => void;
 };
+
+function isBonusSetArray(arr: [string, BonusSet][] | unknown): arr is [string, BonusSet][] {
+    return (Array.isArray(arr) && arr.every(e => typeof e[0] === 'string' && isBonusSet(e[1])))
+}
 
 export const SetSaver = (props: SetSaverProps) => {
 
@@ -33,23 +39,37 @@ export const SetSaver = (props: SetSaverProps) => {
             console.log('Current set is invalid');
         }
 
-        const allSetsOfTypeStringObj = localStorage.getItem(bonusSetsLSKey + typeSelector.current.value);
-        const bonusGroupMap = BonusSetProvider.parseMap(allSetsOfTypeStringObj);
-        const userKey = inputElement.current.value.trim();
-        const selectedType = typeSelector.current.value;
+        const groupName = typeSelector.current.value as BonusSetGroupKeys;
+        const allSetsOfTypeStringObj = localStorage.getItem(bonusSetsLSKey + groupName);
+        let bonusGroupMap: Map<string, BonusSet>;
 
-        if ((bonusGroupMap.get(userKey) && bonusGroupMap.get(userKey).length !== 0) &&
-            !confirm('Current set already exists. Do you want to override it?')) {
-            return;
+        if (allSetsOfTypeStringObj) {
+
+            const allSetsOfTypeArray = JSON.parse(allSetsOfTypeStringObj);
+
+            if (isArrayLikeBonusGroup(allSetsOfTypeArray)) {
+                bonusGroupMap = new Map(allSetsOfTypeArray);
+            }
+
         } else {
-            bonusGroupMap.delete(userKey);
+            bonusGroupMap = new Map();
         }
 
-        bonusGroupMap.set(userKey, props.set);
-        const stringifiedBonusSets = BonusSetProvider.stringifyMap(bonusGroupMap);
-        localStorage.setItem(bonusSetsLSKey + selectedType, stringifiedBonusSets);
+        const userKey = inputElement.current.value.trim();
+
+        if (bonusGroupMap.has(userKey) && !confirm('Current set already exists. Do you want to override it?')) {
+            return;
+        }
+
+        const bonusSet: BonusSet = { name: userKey, type: groupName, items: props.set };
+
+        bonusGroupMap.set(userKey, bonusSet);
+        const arrayLikeGroupMap = Array.from(bonusGroupMap);
+        const stringifiedBonusSets = JSON.stringify(arrayLikeGroupMap);
+        localStorage.setItem(bonusSetsLSKey + groupName, stringifiedBonusSets);
 
         props.updateCallback();
+
     };
 
     return (<div className={classes.saveModule}>

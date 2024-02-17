@@ -4,7 +4,7 @@ import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer'
 import { BuildOptions } from "./types/types";
-import type { Configuration } from "webpack";
+import { type Configuration, DefinePlugin } from "webpack";
 import path from "path";
 
 export function buildPlugins({mode, paths, analyzer}: BuildOptions): Configuration['plugins'] {
@@ -24,8 +24,10 @@ export function buildPlugins({mode, paths, analyzer}: BuildOptions): Configurati
             favicon: path.resolve(paths.public, 'favicon.ico'),
             chunks: ['respondPages']
         }),
-        new ForkTsCheckerWebpackPlugin()
-
+        new ForkTsCheckerWebpackPlugin(),
+        new DefinePlugin(({
+            APP_VERSION: JSON.stringify(require("../../package.json").version),
+          }))
     ];
 
     //dev

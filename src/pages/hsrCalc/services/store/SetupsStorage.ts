@@ -1,16 +1,21 @@
+import { ArrayLikeGroupedMap } from "@/pages/shared/GroupedMap";
 import { Character, CharacterObj } from "../../stats/char/Character";
 import { Enemy, EnemyObj } from "../../stats/enemy/Enemy";
+import { BonusSetGroupKeys, ContextBonusSet } from "@/pages/shared/BonusSetTypes";
+import { BonusSetLib } from "../../HSRCalc";
 
 export const lsSetupsKey = 'setups';
 
-export type Setup = { char: CharacterObj, enemy: EnemyObj };
+export type Setup = { char: CharacterObj, enemy: EnemyObj, bonuses: ArrayLikeGroupedMap<BonusSetGroupKeys, ContextBonusSet> };
 
 export interface SetupsList {
     [name: string]: Setup;
 }
 
 export function getSetups(): SetupsList {
+
     const setups = localStorage.getItem(lsSetupsKey);
+
     if (!setups) {
         console.log('There is no setups yet');
         return {};
@@ -26,18 +31,7 @@ export function getSetups(): SetupsList {
     return parsedSetups;
 }
 
-export function parseToSetup(setup: Setup): { char: Character, enemy: Enemy } {
-    
-    const char = setup.char;
-    const enemy = setup.enemy;
-
-    const newCharInstance = new Character(char.atkType, char.element, char.srcStat, char.stats, char.buffs);
-    const newEnemyInstance = new Enemy(enemy.lvl, enemy.element, enemy.stats, enemy.debuffs, enemy.isBroken);
-
-    return { char: newCharInstance, enemy: newEnemyInstance };
-}
-
-export function saveSetupToFile(file: File) {
+export function saveToJSONFile(file: File) {
 
     const url = window.URL.createObjectURL(file);
     const aElement = document.createElement("a");
@@ -51,7 +45,7 @@ export function saveSetupToFile(file: File) {
     aElement.remove();
 }
 
-export function readSetupFile(file: File): Promise<string> {
+export function readJSONFileAsText(file: File): Promise<string> {
     
     return new Promise((resolve, reject) => {
 
@@ -70,7 +64,8 @@ export function readSetupFile(file: File): Promise<string> {
     });
 }
 
-export function importSetupFile(multiple = false, timeout = 10) {
+export function loadJSONFile(multiple = false, timeout = 10) {
+
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".json";

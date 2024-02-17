@@ -1,9 +1,10 @@
-import { BonusSet } from '@/pages/shared/BonusSetTypes';
+import { BonusItem } from '@/pages/shared/BonusSetTypes';
 import { AllTypesStats, AttackTypesWithAny, ElementDmgTypesWithAll, ResultDmg } from '../../shared/Stat.types';
 import { Character } from './char/Character';
 import { Enemy } from './enemy/Enemy';
+import { BonusSetLib } from '../HSRCalc';
 
-function sumByKey(bonuses: BonusSet, key: AllTypesStats, atkType?: AttackTypesWithAny, elementType?: ElementDmgTypesWithAll): number {
+function sumByKey(bonuses: BonusItem[], key: AllTypesStats, atkType?: AttackTypesWithAny, elementType?: ElementDmgTypesWithAll): number {
     return bonuses
         .filter(e =>
             e.key === key &&
@@ -14,11 +15,26 @@ function sumByKey(bonuses: BonusSet, key: AllTypesStats, atkType?: AttackTypesWi
 }
 //i think it might be calculated when useEffect maybe with atkType and elementType dependency
 
-export const dmgResult = (character: Character, enemy: Enemy, bonuses: BonusSet): ResultDmg => {
+export const dmgResult = (character: Character, enemy: Enemy, groupedBonusMap: BonusSetLib): ResultDmg => {
 
-    if (!character || !enemy || !bonuses) {
+    if (!character || !enemy || !groupedBonusMap) {
         return [0, 0, 0];
     }
+
+    const bonuses: BonusItem[] = [];
+    groupedBonusMap.data.forEach((groupMap) => {
+
+        groupMap.forEach((set) => {
+
+            if (set.isActive) {
+                set.items.forEach((item) => {
+                    if (item.isActive) {
+                        bonuses.push(item);
+                    }
+                });
+            } 
+        });
+    });
 
     const charStats = character.stats;
     const charBuffs = character.buffs;
@@ -67,7 +83,8 @@ export const dmgResult = (character: Character, enemy: Enemy, bonuses: BonusSet)
     const resReductionBonus = sumByKey(bonuses, 'resReduction', character.atkType, character.element);
 
     //TOTAL RES
-    let totalRes = enemyStats.res - (enemyDebuffs.resReduction + resReductionBonus) - (charBuffs.resPen + resPenBonus);
+    const enemyRes = enemyStats.res > 0.9 ? 0.9 : enemyStats.res;
+    let totalRes = enemyRes - ((enemyDebuffs.resReduction + resReductionBonus) + (charBuffs.resPen + resPenBonus));
 
     if (totalRes < -1) {
         totalRes = -1;
@@ -92,9 +109,9 @@ export const dmgResult = (character: Character, enemy: Enemy, bonuses: BonusSet)
     //TOTAL CRDMG
     const finalCrDmg = charBuffs.crdmg + crDmgBonus;
 
-    const dmg = Math.floor(baseDmg * dmgMultiplier * defMultiplier * resMultiplier * dmgTakenMultiplier * brokenMultiplier);
-    const critDmg = Math.floor(dmg * (1 + finalCrDmg));
-    const avgDmg = Math.floor(dmg + (critDmg - dmg) * finalCrRate);
+    const dmg = baseDmg * dmgMultiplier * defMultiplier * resMultiplier * dmgTakenMultiplier * brokenMultiplier;
+    const critDmg = dmg * (1 + finalCrDmg);
+    const avgDmg = dmg + (critDmg - dmg) * finalCrRate;
 
     return ([dmg, critDmg, avgDmg]);
     //return [0,0,0];

@@ -2,12 +2,15 @@ import classes from './SetSelector.module.scss';
 import local from '@/pages/shared/StatDictionary';
 import { useRef } from 'react';
 import { bonusSetsLSKey } from '../setSaver/SetSaver';
-import { BonusSet, BonusSetGroupKeys } from '@/pages/shared/BonusSetTypes';
-import { BonusGroupMap, BonusGroupMapArrayLike, BonusSetProvider } from '@/pages/shared/BonusSetProvider';
+import { BonusItem, BonusSet, BonusSetGroupKeys, bonusSetGroupKeysValues, isBonusSetGroupKey } from '@/pages/shared/BonusSetTypes';
+import { GroupedMap } from '@/pages/shared/GroupedMap';
+import { getStorageBonusSets, isArrayLikeBonusGroup } from '../BonusSetManager';
+import { loadJSONFile, readJSONFileAsText, saveToJSONFile } from '@/pages/hsrCalc/services/store/SetupsStorage';
+import { isBonusSet } from '@/pages/shared/BonusSet';
 
 interface SetSelectorProps {
-    provider: BonusSetProvider;
-    loadCallback?: (bonusSet: BonusSet) => void;
+    provider: GroupedMap<BonusSetGroupKeys, BonusSet>;
+    loadCallback?: (bonusItems: BonusItem[]) => void;
     updateCallback?: () => void;
 }
 
@@ -31,14 +34,14 @@ export function getSelectorDataBySelected(selector: HTMLSelectElement): { groupN
     }
 
     console.log("Something went wrong in 'getSelectorGroupName' function");
-    return {groupName: null, name: null};
+    return { groupName: null, name: null };
 }
 
-export function createOptionsFromList(provider: BonusSetProvider, filters?: BonusSetGroupKeys[]) {
+export function createOptionsFromList(provider: GroupedMap<BonusSetGroupKeys, BonusSet>, filters?: BonusSetGroupKeys[]) {
 
     const options: JSX.Element[] = [];
 
-    provider.forEach((groupName, bonusMap) => {
+    provider.data.forEach((bonusMap, groupName) => {
 
         if (!filters || filters.includes(groupName) || filters.length === 0) {
 
@@ -55,29 +58,22 @@ export function createOptionsFromList(provider: BonusSetProvider, filters?: Bonu
     return options;
 }
 
-function parseBonusSet(stringGroupsJSON: string): BonusGroupMap;
-function parseBonusSet(stringGroupsJSON: string, index: string): BonusSet;
-function parseBonusSet(stringGroupsJSON: string, index?: string): BonusSet | BonusGroupMap {
+function getNameForBonusCopy(map: GroupedMap<BonusSetGroupKeys, BonusSet>, oldName: string, group: BonusSetGroupKeys) {
 
-    const parsedBonusGroupArray = JSON.parse(stringGroupsJSON ?? null) as BonusGroupMapArrayLike;
-    const bonusSetMap = BonusSetProvider.groupMapFromArray(parsedBonusGroupArray);
+    let newName = oldName;
+    let reserveIndex = 0;
 
-    if (!bonusSetMap) {
-        console.log('Error when parsing selected set!');
-        return null;
+    while (map.getElement(newName, group)) {
+
+        if (reserveIndex > 999) {
+            throw new Error('Something went wrong with indexing new setup');
+        }
+
+        reserveIndex++;
+        newName = oldName.concat('(', reserveIndex.toString(), ')');
     }
 
-    if (!index) {
-        return bonusSetMap as BonusGroupMap;
-    }
-
-    const selectedObj = bonusSetMap.get(index);
-    if (!selectedObj) {
-        console.log('Error when loading selected set!');
-        return null;
-    }
-
-    return selectedObj;
+    return newName;
 }
 
 export const SetSelector = (props: SetSelectorProps) => {
@@ -88,12 +84,12 @@ export const SetSelector = (props: SetSelectorProps) => {
 
         const { groupName, name } = getSelectorDataBySelected(selectorRef.current);
 
-        if (groupName && name && props.provider.getBonusSet(name, groupName)) {
+        if (groupName && name && props.provider.getElement(name, groupName)) {
 
-            const selectedObj = props.provider.getBonusSet(name, groupName);
+            const selectedObj = props.provider.getElement(name, groupName);
 
             if (selectedObj && confirm('Do you want to load set? It will reset current preset.')) {
-                props.loadCallback(selectedObj);
+                props.loadCallback(selectedObj.items);
             }
         }
     };
@@ -105,11 +101,13 @@ export const SetSelector = (props: SetSelectorProps) => {
         if (groupName && name) {
 
             const stringObj = localStorage.getItem(bonusSetsLSKey + groupName);
-            const groupMap = BonusSetProvider.parseMap(stringObj);
+            const arrayLikeGroupMap = JSON.parse(stringObj);
+            if (!isArrayLikeBonusGroup(arrayLikeGroupMap)) return;
+            const groupMap = new Map<string, BonusSet>(arrayLikeGroupMap);
 
             if (groupMap.delete(name) && groupMap.size !== 0) {
 
-                const newStringObj = BonusSetProvider.stringifyMap(groupMap);
+                const newStringObj = JSON.stringify(Array.from(groupMap));
                 localStorage.setItem(bonusSetsLSKey + groupName, newStringObj);
 
             } else if (groupMap.size === 0) {
@@ -121,14 +119,117 @@ export const SetSelector = (props: SetSelectorProps) => {
         }
     };
 
+    const importSetsHandler = async (event: React.MouseEvent<HTMLButtonElement>) => {
+
+        let files: FileList = undefined;
+
+        try {
+            files = await loadJSONFile(false, 600);
+        } catch (e) {
+            console.log(e);
+            return;
+        }
+
+        if (!files || !files[0]) { return; }
+
+        let storedBonusSets = getStorageBonusSets();
+
+        let importedBonuses: string;
+
+        try {
+            importedBonuses = await readJSONFileAsText(files[0]);
+        } catch (e) {
+            console.log(e);
+            return;
+        }
+
+        if (!importedBonuses || importedBonuses.length === 0) {
+            alert('There is nothing to import');
+            return;
+        }
+
+        let parsedBonuses: GroupedMap<BonusSetGroupKeys, BonusSet>;
+
+        try {
+            const parsed = GroupedMap.parse(importedBonuses);
+            parsedBonuses = GroupedMap.isTypes(parsed, isBonusSetGroupKey, isBonusSet) ? parsed : undefined;
+        } catch (e) {
+            console.log('Wrong type of file!');
+            return;
+        }
+
+        if (confirm('Do you want to SAVE all your previous setups?\n"OK" to ADD new setups, "Cancel" to CLEAR and ADD')) {
+
+            const doRewriteItems = confirm('Do you want to override setups on name conflict?\n"Cancel" to add with new names');
+
+            parsedBonuses.data.forEach((groupMap, groupKey) => {
+                groupMap.forEach((set, key) => {
+
+                    let newKey = key;
+
+                    if (!doRewriteItems) {
+                        newKey = getNameForBonusCopy(storedBonusSets, key, groupKey);
+                    }
+
+                    storedBonusSets.setObject(set, groupKey, newKey);
+                })
+            })
+
+        } else {
+
+            storedBonusSets = new GroupedMap<BonusSetGroupKeys, BonusSet>(parsedBonuses);         
+        }
+
+        storedBonusSets.data.forEach((groupMap, groupKey) => {
+            const arrayLikeGroupMap = Array.from(groupMap);
+            const lsNewItem = JSON.stringify(arrayLikeGroupMap);
+            localStorage.setItem(bonusSetsLSKey + groupKey, lsNewItem);
+        });
+
+        props.updateCallback();
+    };
+
+    const exportSetsHandler = () => {
+
+        const storedBonusSets = getStorageBonusSets();
+
+        if (storedBonusSets.data.size === 0) {
+            return;
+        }
+        const arrayLikeStoredBonusSets = GroupedMap.toArray(storedBonusSets);
+        const setupsString = JSON.stringify(arrayLikeStoredBonusSets);
+        let file = new File([setupsString], 'bonuses.json', { type: "text/plain:charset=UTF-8" });
+
+        saveToJSONFile(file);
+    };
+
+    const clearSetsHandler = (): void => {
+        if (confirm('Do you want to DELETE ALL your bonuses?')) {
+            bonusSetGroupKeysValues.forEach((key) => {
+                localStorage.removeItem(bonusSetsLSKey + key);
+            })
+        }
+        props.updateCallback();
+    };
+
     const options: JSX.Element[] = createOptionsFromList(props.provider) ?? [];
 
     return (
         <div className={classes.setsListModule}>
             <p className={classes.header}>Your sets:</p>
             <div className={classes.buttonSection}>
-                <button onClick={loadBonusSetHandler}>Load</button>
-                <button onClick={deleteBonusSetHandler}>Delete</button>
+
+                <div className={classes.buttonSet}>
+                    <button onClick={importSetsHandler}>Import</button>
+                    <button onClick={exportSetsHandler}>Export</button>
+                    <button onClick={clearSetsHandler}>Clear</button>
+                </div>
+
+                <div className={classes.buttonSet}>
+                    <button onClick={loadBonusSetHandler}>Load</button>
+                    <button onClick={deleteBonusSetHandler}>Delete</button>
+                </div>
+
             </div>
             <select ref={selectorRef} className={classes.setsList} name="fruit" size={10}>
                 {options}
