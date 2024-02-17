@@ -215,6 +215,13 @@ export const DataStore = memo((props: DataStoreProps) => {
         setOptions(buildOptionElements(setupsObj));
     };
 
+    const clearHandler = () => {
+        if (confirm('Do you want to delete all saved setups?')) {
+            localStorage.removeItem('setups');
+            setOptions([]);
+        }
+    }
+
     return (
         <div className={classes.dataStoreModule}>
 
@@ -246,7 +253,7 @@ export const DataStore = memo((props: DataStoreProps) => {
             <div className={classes.importExportSection}>
                 <button onClick={importDataHandler}>Import</button>
                 <button onClick={exportDataHandler}>Export</button>
-                <button onClick={() => localStorage.clear()}>Clear</button>
+                <button onClick={clearHandler}>Clear</button>
             </div>
 
         </div>

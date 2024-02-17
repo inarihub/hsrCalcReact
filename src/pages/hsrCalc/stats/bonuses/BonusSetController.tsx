@@ -85,7 +85,7 @@ export const BonusSetController = (props: BonusSetControllerProps) => {
     };
 
     const clearHandler = () => {
-        if (props.provider.data.size !== 0) {
+        if (props.provider.data.size !== 0 && confirm('Do you want to clear the list?')) {
             props.updateCallback(new GroupedMap<BonusSetGroupKeys, ContextBonusSet>());
         }
     };
