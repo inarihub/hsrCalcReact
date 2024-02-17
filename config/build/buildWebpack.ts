@@ -21,7 +21,7 @@ export function buildWebpack(options: BuildOptions): webpack.Configuration {
         module: { rules: buildLoaders(options) },
         resolve: buildResolver(options),
         plugins: buildPlugins(options),
-        devtool: isDev ? undefined : 'source-map',
+        devtool: isDev ? 'source-map' : undefined,
         devServer: isDev ? buildDevServer(options) : undefined
     }
 }
