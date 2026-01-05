@@ -35,7 +35,7 @@ export class GroupedMap<K extends string = string, T = any> {
                 this._map.set(group, new Map<string, T>);
         }
 
-        this._map.get(group).set(name, obj);
+        this._map.get(group)!.set(name, obj);
     }
 
     public setGroupMap(key: K, map: GroupMap<T>) {
@@ -43,7 +43,7 @@ export class GroupedMap<K extends string = string, T = any> {
     }
 
     public getElement(key: string, group: K) {
-        return this._map.has(group) ? this._map.get(group).get(key) : undefined;
+        return this._map.has(group) ? this._map.get(group)!.get(key) : undefined;
     }
 
     public getConvertedGroupedMap<M = any>(convertFunc: (obj: T) => M): GroupedMap<K, M> {
@@ -77,13 +77,15 @@ export class GroupedMap<K extends string = string, T = any> {
 
             return true;
         }
+
+        return false;
     }
 
     public unsetObject(group: K, name: string): boolean {
 
         if (this.isObjExists(group, name)) {
 
-            this._map.get(group).delete(name);
+            this._map.get(group)!.delete(name);
             return true;
         }
 
@@ -91,11 +93,11 @@ export class GroupedMap<K extends string = string, T = any> {
     }
 
     public isObjExists(group: K, name: string): boolean {
-        return (this._map.has(group) && this._map.get(group).has(name));
+        return (this._map.has(group) && this._map.get(group)!.has(name));
     }
 
     public hasElement(key: string, group: K) {
-        return this._map.has(group) && this._map.get(group).has(key);
+        return this._map.has(group) && this._map.get(group)!.has(key);
     }
 
     public getWith(obj: T, name: string, group: K): GroupedMap<K, T> {

@@ -18,7 +18,7 @@ export const App = () => {
                     <UserModule />
                     <Outlet />
                 </div>
-                <p style={{fontSize: 14, textAlign: 'right', paddingRight: 14}}>ver.{APP_VERSION}</p>
+                <p style={{position: 'absolute', bottom: 0, right: 0, fontSize: 14, textAlign: 'right', paddingRight: 14}}>ver.{APP_VERSION}</p>
             </div>
         </div>
     );

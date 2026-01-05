@@ -5,6 +5,7 @@ import { HSRCalc } from './pages/hsrCalc';
 import { Help } from './pages/help';
 import { Suspense } from 'react';
 import { BonusSetManager } from './pages/bonusSetManager';
+import { Achievements } from './pages/achievements/Achievements';
 
 const root = document.getElementById('root');
 
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
       {
         path: '/hsrCalc',
         element: <Suspense fallback={'Loading...'}><HSRCalc /></Suspense>
+      },
+      {
+        path: '/achievements',
+        element: <Suspense fallback={'Loading...'}><Achievements /></Suspense>
       },
       {
         path: '*',
