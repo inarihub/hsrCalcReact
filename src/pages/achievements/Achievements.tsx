@@ -70,15 +70,15 @@ export const Achievements = () => {
 
             const isCompleted = isAchievementCompleted(checked, achievement);
 
-            // push to 'In progress'
-            if (!isCompleted) {
-                inProgressGroup.push(achievement);
-            }
-
             const filterForCompleted = filter === 'Completed';
 
             if (isCompleted === filterForCompleted || filter === 'All') {
                 seriesGroup.push(achievement);
+
+                // push to 'In progress'
+                if (!isCompleted) {
+                    inProgressGroup.push(achievement);
+                }
             }
 
             if (!achievement.related || achievement.related.every(id => !achievementMap.has(id))) {
@@ -89,7 +89,7 @@ export const Achievements = () => {
         seriesMap.set(0, inProgressGroup.sort((a, b) => a.version > b.version ? 1 : -1));
 
         return { seriesMap, achievementMap, total };
-    }, [achievements, series, filter, activeSeries, ready])
+    }, [achievements, series, filter, ready])
 
 
     const isCompleted = useCallback((id: number) => {
@@ -121,7 +121,7 @@ export const Achievements = () => {
         setChecked(newData);
     }, []);
 
-    const activeSeriesAchievements = useMemo(() => achievementsAggregation?.seriesMap.get(activeSeries) ?? null, [achievementsAggregation]);
+    const activeSeriesAchievements = useMemo(() => achievementsAggregation?.seriesMap.get(activeSeries) ?? null, [achievementsAggregation, activeSeries]);
 
     useEffect(() => {
         const exportObj: CompletedAchievements = {

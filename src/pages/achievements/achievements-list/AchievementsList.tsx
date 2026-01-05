@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, memo } from 'react';
 import { Achievement } from '../types';
 import { AchievementTile } from './AchievementTile';
 import classes from '../achievements.module.scss';
@@ -9,14 +9,14 @@ interface AchievementsListProps {
     isCompleted: (id: number) => boolean;
 }
 
-export const AchievementsList: FC<AchievementsListProps> = ({ achievements, onItemClick, isCompleted }) => {
+export const AchievementsList: FC<AchievementsListProps> = memo(({ achievements, onItemClick, isCompleted }) => {
     if (!achievements.length) {
         return (
             <div className={classes.achContainer}>
                 <div
                     className={classes.achievementTile}
                 >
-                    Everything is done!
+                    No achievements
                 </div>
             </div>
         )
@@ -24,7 +24,7 @@ export const AchievementsList: FC<AchievementsListProps> = ({ achievements, onIt
 
     return (
         <div className={classes.achContainer}>
-            {achievements?.map(d => (
+            {achievements.map(d => (
                 <AchievementTile
                     key={d.id}
                     checked={isCompleted(d.id)}
@@ -34,4 +34,4 @@ export const AchievementsList: FC<AchievementsListProps> = ({ achievements, onIt
             ))}
         </div>
     )
-}
+});
