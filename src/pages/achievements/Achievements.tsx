@@ -28,6 +28,9 @@ export const Achievements = () => {
     const [lang, setLang] = useState<Language>('en');
     const [filter, setFilter] = useState<Filters>('In progress');
 
+    const { achievements, series } = useAchievements(lang);
+    const ready = achievements != null && series != null;
+
     useEffect(() => {
         const achieves = localStorage.getItem(ACHIEVEMENT_KEY);
 
@@ -35,16 +38,14 @@ export const Achievements = () => {
             return;
         }
 
-        const storageRecord: CompletedAchievements = JSON.parse(achieves);
-
-        if (storageRecord) {
-            setChecked(new Set(storageRecord.hsr_achievements))
-            console.log('Storage records are restored');
+        try {
+            const storageRecord: CompletedAchievements = JSON.parse(achieves);
+            const checked = new Set(storageRecord.hsr_achievements);
+            setChecked(checked);
+        } catch (e) {
+            console.error('Cannot parse stored data');
         }
     }, [])
-
-    const { achievements, series } = useAchievements(lang);
-    const ready = achievements != null && series != null;
 
     const achievementsAggregation: AchievementsAggregation | undefined = useMemo(() => {
         if (!ready) return;
@@ -70,16 +71,11 @@ export const Achievements = () => {
 
             const isCompleted = isAchievementCompleted(checked, achievement);
 
-            const filterForCompleted = filter === 'Completed';
-
-            if (isCompleted === filterForCompleted || filter === 'All') {
-                seriesGroup.push(achievement);
-
-                // push to 'In progress'
-                if (!isCompleted) {
-                    inProgressGroup.push(achievement);
-                }
+            if (isCompleted) {
+                inProgressGroup.push(achievement);
             }
+
+            seriesGroup.push(achievement);
 
             if (!achievement.related || achievement.related.every(id => !achievementMap.has(id))) {
                 total++;
@@ -89,31 +85,29 @@ export const Achievements = () => {
         seriesMap.set(0, inProgressGroup.sort((a, b) => a.version > b.version ? 1 : -1));
 
         return { seriesMap, achievementMap, total };
-    }, [achievements, series, filter, ready])
-
-
-    const isCompleted = useCallback((id: number) => {
-        if (!achievementsAggregation) {
-            return false;
-        }
-
-        const achievement = achievementsAggregation.achievementMap.get(id);
-
-        if (!achievement) {
-            return false;
-        }
-
-        return isAchievementCompleted(checked, achievement);
-    }, [achievementsAggregation, checked])
+    }, [achievements, series, ready])
 
     const onItemClick = useCallback((id: number) => {
         setChecked(prev => {
             const newChecked = new Set(Array.from(prev));
-            if (newChecked.has(id)) newChecked.delete(id);
-            else newChecked.add(id);
+
+            if (newChecked.has(id)) {
+                newChecked.delete(id);
+                return newChecked;
+            }
+
+            const related = achievementsAggregation?.achievementMap.get(id)?.related;
+            const completedRelated = related?.find(r => prev.has(r));
+
+            if (completedRelated) {
+                newChecked.delete(completedRelated);
+                return newChecked;
+            }
+
+            newChecked.add(id);
             return newChecked;
         })
-    }, []);
+    }, [achievementsAggregation?.achievementMap]);
 
     const onSeriesChange = useCallback((id: number) => setActiveSeries(id), []);
     const onImport = useCallback((data: CompletedAchievements) => {
@@ -130,6 +124,20 @@ export const Achievements = () => {
 
         localStorage.setItem(ACHIEVEMENT_KEY, JSON.stringify(exportObj));
     }, [checked])
+
+    const isCompleted = useCallback((id: number) => {
+        if (!achievementsAggregation) {
+            return false;
+        }
+
+        const achievement = achievementsAggregation.achievementMap.get(id);
+
+        if (!achievement) {
+            return false;
+        }
+
+        return isAchievementCompleted(checked, achievement);
+    }, [achievementsAggregation?.achievementMap, checked])
 
     return (
         <div className={classes.calcMainContainer}>
@@ -154,10 +162,17 @@ export const Achievements = () => {
                     ? (
                         <div key='list' className={classes.column}>
                             <div className={classes.row}>
-                                <AchievementsFilter filter={filter} onFilterChange={setFilter} />
-                                <CounterLabel current={checked.size} total={Number(achievementsAggregation?.total)} />
+                                <AchievementsFilter
+                                    filter={filter}
+                                    onFilterChange={setFilter}
+                                />
+                                <CounterLabel
+                                    current={checked.size}
+                                    total={Number(achievementsAggregation.total)}
+                                />
                             </div>
                             <AchievementsList
+                                filter={filter}
                                 achievements={activeSeriesAchievements}
                                 onItemClick={onItemClick}
                                 isCompleted={isCompleted}

@@ -9,10 +9,7 @@ interface AchievementTile {
 }
 
 export const AchievementTile: FC<AchievementTile> = ({ achievement, checked, onClick }) => {
-    const onTileClick = useCallback(() => {
-        console.log(achievement);
-        onClick(achievement.id);
-    }, []);
+    const onTileClick = useCallback(() => onClick(achievement.id), []);
     const opacityStyle = useMemo(() => ({ opacity: `${checked ? 0.5 : 1}` }), [checked]);
 
     const url = useMemo(() => {
