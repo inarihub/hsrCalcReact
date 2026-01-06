@@ -24,7 +24,7 @@ function isAchievementCompleted(checkedList: Set<Achievement['id']>, achievement
 
 export const Achievements = () => {
     const [checked, setChecked] = useState<Set<number>>(new Set<number>());
-    const [activeSeries, setActiveSeries] = useState<number>(0);
+    const [activeSeries, setActiveSeries] = useState<number>(1);
     const [lang, setLang] = useState<Language>('en');
     const [filter, setFilter] = useState<Filters>('In progress');
 
@@ -54,7 +54,6 @@ export const Achievements = () => {
         const achievementMap = new Map<number, Achievement>();
 
         const forMap = series.map(g => ([g.id, []] as [number, Achievement[]]));
-        const inProgressGroup: Achievement[] = [];
         const seriesMap = new Map(forMap);
 
         for (const ach of achievements) {
@@ -69,20 +68,12 @@ export const Achievements = () => {
                 continue;
             }
 
-            const isCompleted = isAchievementCompleted(checked, achievement);
-
-            if (isCompleted) {
-                inProgressGroup.push(achievement);
-            }
-
             seriesGroup.push(achievement);
 
             if (!achievement.related || achievement.related.every(id => !achievementMap.has(id))) {
                 total++;
             }
         }
-
-        seriesMap.set(0, inProgressGroup.sort((a, b) => a.version > b.version ? 1 : -1));
 
         return { seriesMap, achievementMap, total };
     }, [achievements, series, ready])

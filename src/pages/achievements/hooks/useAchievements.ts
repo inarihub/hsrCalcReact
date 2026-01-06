@@ -1,16 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Achievement, AchievementSeries } from '../types';
-import { Achievements } from '../Achievements';
-import { Language } from '../settings/LanguageSelector';
-
-const LANG_MAP: Record<Language, string> = {
-    en: 'In progress',
-    ru: 'В прогрессе',
-};
-
-function getInProgressSeries(lang: Language) {
-    return { id: 0, name: LANG_MAP[lang] };
-}
 
 interface State {
     achievements: {
@@ -55,8 +44,7 @@ export function useAchievements(lang: 'ru' | 'en') {
                 if (!Array.isArray(dataParsed)) {
                     throw new Error('Invalid data');
                 }
-                const result = [getInProgressSeries(lang), ...dataParsed];
-                setState(prev => ({ ...prev, series: { data: result, fetching: false } }));
+                setState(prev => ({ ...prev, series: { data: dataParsed, fetching: false } }));
             })
             .catch(e => console.error('error:', e));
 

@@ -21,7 +21,7 @@ export const AchievementsList: FC<AchievementsListProps> = memo(({ filter, achie
     }, [filter]);
 
     const list = useMemo(() => {
-        return achievements.reduce((acc, d) => {
+        return achievements?.reduce((acc, d) => {
             const isComplete = isCompleted(d.id);
 
             if (shouldInclude(d.id)) {
@@ -35,7 +35,7 @@ export const AchievementsList: FC<AchievementsListProps> = memo(({ filter, achie
                 )
             }
             return acc;
-        }, []);
+        }, []) ?? [];
     }, [achievements, shouldInclude, onItemClick, isCompleted]);
 
     return (
